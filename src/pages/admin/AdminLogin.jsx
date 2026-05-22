@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import { login } from '../../services/cmsAdminService';
 
 export default function AdminLogin() {
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -15,13 +16,12 @@ export default function AdminLogin() {
         setError('');
         setLoading(true);
 
-        // Simulate network delay for better UX
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const result = await login(username, password);
 
-        if (login(password)) {
+        if (result.success) {
             navigate('/admin');
         } else {
-            setError('Mật khẩu không chính xác');
+            setError(result.message || 'Đăng nhập thất bại');
         }
         setLoading(false);
     };
@@ -50,12 +50,25 @@ export default function AdminLogin() {
                         </div>
                         <h1 className="text-2xl font-bold text-white">Quản trị CMS</h1>
                         <p className="text-slate-400 text-sm mt-2 text-center">
-                            Vui lòng nhập mật khẩu để truy cập hệ thống quản trị nội dung.
+                            Đăng nhập bằng tài khoản được cấp để truy cập hệ thống.
                         </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
+                            <label className="block text-xs font-medium text-slate-400 mb-1">Tài khoản</label>
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder="Nhập tài khoản..."
+                                className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 transition-all placeholder:text-slate-600"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-slate-400 mb-1">Mật khẩu</label>
                             <input
                                 type="password"
                                 value={password}
@@ -64,15 +77,16 @@ export default function AdminLogin() {
                                 className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 transition-all placeholder:text-slate-600"
                                 required
                             />
-                            {error && (
-                                <p className="text-red-400 text-sm mt-2">{error}</p>
-                            )}
                         </div>
+
+                        {error && (
+                            <p className="text-red-400 text-sm mt-2">{error}</p>
+                        )}
 
                         <button
                             type="submit"
-                            disabled={loading || !password}
-                            className="w-full bg-teal-500 hover:bg-teal-400 text-white font-medium py-3 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={loading || !password || !username}
+                            className="w-full bg-teal-500 hover:bg-teal-400 text-white font-medium py-3 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
                         >
                             {loading ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />

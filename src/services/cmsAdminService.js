@@ -4,7 +4,6 @@
  */
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTOHDWp8w7M5RtSXxA_lqkQTA_1pqGw_xyO_bPkj0I32P7ck5U5GGe4fBE77ZAM9xEhg/exec";
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'mindtransform2024';
 
 /**
  * Check if the user is authenticated
@@ -14,14 +13,44 @@ export function isAuthenticated() {
 }
 
 /**
- * Login
+ * Get current logged in user details
  */
-export function login(password) {
-    if (password === ADMIN_PASSWORD) {
-        sessionStorage.setItem('admin_auth', 'true');
-        return true;
+export function getCurrentUser() {
+    try {
+        const userStr = sessionStorage.getItem('admin_user');
+        return userStr ? JSON.parse(userStr) : null;
+    } catch {
+        return null;
     }
-    return false;
+}
+
+/**
+ * Login via API
+ */
+export async function login(username, password) {
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'login',
+                username,
+                password
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.result === 'success') {
+            sessionStorage.setItem('admin_auth', 'true');
+            sessionStorage.setItem('admin_user', JSON.stringify(data.user));
+            return { success: true, user: data.user };
+        } else {
+            return { success: false, message: data.message || 'Tài khoản hoặc mật khẩu không đúng' };
+        }
+    } catch (err) {
+        console.error('Login error:', err);
+        return { success: false, message: 'Lỗi kết nối tới server' };
+    }
 }
 
 /**
@@ -29,6 +58,7 @@ export function login(password) {
  */
 export function logout() {
     sessionStorage.removeItem('admin_auth');
+    sessionStorage.removeItem('admin_user');
 }
 
 /**

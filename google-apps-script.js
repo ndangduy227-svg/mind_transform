@@ -16,6 +16,7 @@ const LEAD_SHEET_NAME = "Leads";
 const POST_SHEET_NAME = "Posts";
 const TEMPLATE_SHEET_NAME = "Templates";
 const RESEARCH_SHEET_NAME = "Research";
+const USER_SHEET_NAME = "Users";
 
 // ============================================
 // GET: Đọc dữ liệu (Blog Posts / Templates)
@@ -76,6 +77,8 @@ function doPost(e) {
       switch(params.action) {
         case 'submit_research':
           return handleSubmitResearch(params);
+        case 'login':
+          return handleLogin(params.username, params.password);
         case 'create_post':
           return handleCreateRecord(POST_SHEET_NAME, params.data);
         case 'update_post':
@@ -145,6 +148,41 @@ function handleSubmitResearch(params) {
   ]);
 
   return responseJSON({ 'result': 'success' });
+}
+
+// --- AUTH HANDLER ---
+
+function handleLogin(username, password) {
+  const doc = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = doc.getSheetByName(USER_SHEET_NAME);
+  
+  if (!sheet) {
+    return responseJSON({ 'result': 'error', 'message': 'Users system not initialized. Run setupUsersSheet() first.' });
+  }
+
+  const rows = sheet.getDataRange().getValues();
+  if (rows.length <= 1) {
+    return responseJSON({ 'result': 'error', 'message': 'Invalid credentials' });
+  }
+
+  const headers = rows[0];
+  const userIdx = headers.indexOf('username');
+  const passIdx = headers.indexOf('password');
+  const roleIdx = headers.indexOf('role');
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][userIdx] === username && rows[i][passIdx] === password) {
+      return responseJSON({
+        'result': 'success',
+        'user': {
+          'username': username,
+          'role': rows[i][roleIdx] || 'admin'
+        }
+      });
+    }
+  }
+
+  return responseJSON({ 'result': 'error', 'message': 'Invalid credentials' });
 }
 
 // --- CMS CRUD HANDLERS ---
@@ -248,6 +286,21 @@ function responseJSON(data) {
 // ============================================
 // SETUP
 // ============================================
+function setupUsersSheet() {
+  const doc = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = doc.getSheetByName(USER_SHEET_NAME);
+  
+  if (!sheet) {
+    sheet = doc.insertSheet(USER_SHEET_NAME);
+    const headers = ['id', 'username', 'password', 'role', 'created_at'];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    
+    // Create default admin
+    const adminData = ['1', 'admin', 'mindtransform2024', 'superadmin', new Date().toISOString().split('T')[0]];
+    sheet.getRange(2, 1, 1, adminData.length).setValues([adminData]);
+  }
+}
+
 function setupTemplatesSheet() {
   const doc = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = doc.getSheetByName(TEMPLATE_SHEET_NAME);

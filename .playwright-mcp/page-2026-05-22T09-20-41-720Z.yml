@@ -1,0 +1,57 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - link [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8]:
+          - generic [ref=e9]: Mind
+          - generic [ref=e11]: Transform
+      - generic [ref=e12]:
+        - link "Trang chủ" [ref=e13] [cursor=pointer]:
+          - /url: /
+        - link "Sản phẩm" [ref=e14] [cursor=pointer]:
+          - /url: /products
+        - link "Blog" [ref=e15] [cursor=pointer]:
+          - /url: /blog
+        - link "Templates New" [ref=e16] [cursor=pointer]:
+          - /url: /templates
+          - text: Templates
+          - generic [ref=e17]: New
+        - link "Mind AI Beta" [ref=e18] [cursor=pointer]:
+          - /url: /mind-ai
+          - text: Mind AI
+          - generic [ref=e19]: Beta
+      - button "Liên hệ" [ref=e21] [cursor=pointer]
+  - main [ref=e22]:
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - img [ref=e27]
+          - text: Powered by Lark Suite
+        - heading "Lark Template Library" [level=1] [ref=e29]
+        - paragraph [ref=e30]: Thư viện template Lark được thiết kế sẵn cho từng bài toán kinh doanh. Chọn use case phù hợp, lấy template và bắt đầu triển khai ngay.
+        - generic [ref=e31]:
+          - 'textbox "Tìm kiếm template... (ví dụ: CRM, quản lý kho...)" [ref=e32]'
+          - img [ref=e33]
+      - generic [ref=e37]:
+        - button "Bộ lọc" [ref=e38] [cursor=pointer]:
+          - img [ref=e39]
+          - text: Bộ lọc
+          - img [ref=e41]
+        - button "Tất cả" [ref=e43] [cursor=pointer]
+      - generic [ref=e44]:
+        - img [ref=e45]
+        - paragraph [ref=e47]: Đang tải template...
+  - contentinfo [ref=e48]:
+    - generic [ref=e49]:
+      - img [ref=e51]:
+        - generic [ref=e52]: Mind
+        - generic [ref=e54]: Transform
+      - generic [ref=e55]:
+        - link "Về chúng tôi" [ref=e56] [cursor=pointer]:
+          - /url: /
+        - link "Sản phẩm" [ref=e57] [cursor=pointer]:
+          - /url: /products
+        - link "Blog" [ref=e58] [cursor=pointer]:
+          - /url: /blog
+      - generic [ref=e59]: © 2025 Mind.Transform. All rights reserved.

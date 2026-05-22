@@ -1,0 +1,46 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - link [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8]:
+          - generic [ref=e9]: Mind
+          - generic [ref=e11]: Transform
+      - generic [ref=e12]:
+        - link "Trang chủ" [ref=e13] [cursor=pointer]:
+          - /url: /
+        - link "Sản phẩm" [ref=e14] [cursor=pointer]:
+          - /url: /products
+        - link "Blog" [ref=e15] [cursor=pointer]:
+          - /url: /blog
+        - link "Templates New" [ref=e16] [cursor=pointer]:
+          - /url: /templates
+          - text: Templates
+          - generic [ref=e17]: New
+        - link "Mind AI Beta" [ref=e18] [cursor=pointer]:
+          - /url: /mind-ai
+          - text: Mind AI
+          - generic [ref=e19]: Beta
+      - button "Liên hệ" [ref=e21] [cursor=pointer]
+  - main [ref=e22]:
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - heading "Góc nhìn Mind.Transform" [level=1] [ref=e26]
+        - paragraph [ref=e27]: Chia sẻ kiến thức, kinh nghiệm và góc nhìn về Chuyển đổi số, Quản trị và Công nghệ.
+        - generic [ref=e28]:
+          - 'textbox "Bạn đang tìm kiếm gì? (ví dụ: Lark Suite, CRM...)" [ref=e29]'
+          - img [ref=e30]
+      - img [ref=e34]
+  - contentinfo [ref=e36]:
+    - generic [ref=e37]:
+      - img [ref=e39]:
+        - generic [ref=e40]: Mind
+        - generic [ref=e42]: Transform
+      - generic [ref=e43]:
+        - link "Về chúng tôi" [ref=e44] [cursor=pointer]:
+          - /url: /
+        - link "Sản phẩm" [ref=e45] [cursor=pointer]:
+          - /url: /products
+        - link "Blog" [ref=e46] [cursor=pointer]:
+          - /url: /blog
+      - generic [ref=e47]: © 2025 Mind.Transform. All rights reserved.
