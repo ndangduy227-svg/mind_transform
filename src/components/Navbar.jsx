@@ -16,6 +16,7 @@ export default function Navbar() {
         { path: '/', label: 'Trang chủ' },
         { path: '/products', label: 'Sản phẩm' },
         { path: '/blog', label: 'Blog' },
+        { path: '/templates', label: 'Templates', badge: 'New' },
         { path: '/mind-ai', label: 'Mind AI', badge: 'Beta' },
     ];
 

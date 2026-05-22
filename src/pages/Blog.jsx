@@ -3,9 +3,7 @@ import { motion } from 'framer-motion';
 import { Calendar, User, ArrowRight, Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getGoogleDriveImageUrl } from '../utils/imageHelper';
-
-// URL Google Apps Script
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTOHDWp8w7M5RtSXxA_lqkQTA_1pqGw_xyO_bPkj0I32P7ck5U5GGe4fBE77ZAM9xEhg/exec";
+import { posts as postsService } from '../services/cmsService';
 
 // Category Descriptions
 const CATEGORY_INFO = {
@@ -130,11 +128,9 @@ export default function Blog() {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        fetch(SCRIPT_URL)
-            .then(res => res.json())
+        postsService.getAll()
             .then(data => {
-                const sortedData = Array.isArray(data) ? data.sort((a, b) => new Date(b.date) - new Date(a.date)) : [];
-                setPosts(sortedData);
+                setPosts(data);
                 setLoading(false);
             })
             .catch(err => {

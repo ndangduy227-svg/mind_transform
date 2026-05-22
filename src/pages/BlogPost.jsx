@@ -6,9 +6,7 @@ import { Helmet } from 'react-helmet-async';
 import Markdown from 'react-markdown';
 import { getGoogleDriveImageUrl } from '../utils/imageHelper';
 import SidebarCTA from '../components/SidebarCTA';
-
-// URL Google Apps Script
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTOHDWp8w7M5RtSXxA_lqkQTA_1pqGw_xyO_bPkj0I32P7ck5U5GGe4fBE77ZAM9xEhg/exec";
+import { posts as postsService } from '../services/cmsService';
 
 export default function BlogPost() {
     const { slug } = useParams();
@@ -19,10 +17,8 @@ export default function BlogPost() {
 
     useEffect(() => {
         setLoading(true);
-        fetch(SCRIPT_URL)
-            .then(res => res.json())
-            .then(data => {
-                const foundPost = data.find(p => p.slug === slug);
+        postsService.getBySlug(slug)
+            .then(foundPost => {
                 if (foundPost) {
                     setPost(foundPost);
 
