@@ -1,106 +1,40 @@
-/**
- * CMS Admin Service Layer
- * Handles CRUD operations for Blog Posts and Lark Templates via Google Apps Script
- */
+import { supabase } from '../lib/supabase';
+import { invalidateCache } from './cmsService';
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTOHDWp8w7M5RtSXxA_lqkQTA_1pqGw_xyO_bPkj0I32P7ck5U5GGe4fBE77ZAM9xEhg/exec";
-
-/**
- * Check if the user is authenticated
- */
-export function isAuthenticated() {
-    return sessionStorage.getItem('admin_auth') === 'true';
+export async function isAuthenticated() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session;
 }
 
-/**
- * Get current logged in user details
- */
-export function getCurrentUser() {
-    try {
-        const userStr = sessionStorage.getItem('admin_user');
-        return userStr ? JSON.parse(userStr) : null;
-    } catch {
-        return null;
+export async function getCurrentUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+}
+
+export async function login(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        return { success: false, message: 'Email hoặc mật khẩu không đúng' };
     }
+    return { success: true, user: data.user };
 }
 
-/**
- * Login via API
- */
-export async function login(username, password) {
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'login',
-                username,
-                password
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.result === 'success') {
-            sessionStorage.setItem('admin_auth', 'true');
-            sessionStorage.setItem('admin_user', JSON.stringify(data.user));
-            return { success: true, user: data.user };
-        } else {
-            return { success: false, message: data.message || 'Tài khoản hoặc mật khẩu không đúng' };
-        }
-    } catch (err) {
-        console.error('Login error:', err);
-        return { success: false, message: 'Lỗi kết nối tới server' };
-    }
+export async function logout() {
+    await supabase.auth.signOut();
 }
 
-/**
- * Logout
- */
-export function logout() {
-    sessionStorage.removeItem('admin_auth');
-    sessionStorage.removeItem('admin_user');
-}
-
-/**
- * Fetch all data for admin (including drafts)
- * @param {'posts'|'templates'} type 
- */
 export async function fetchAllForAdmin(type) {
-    if (!isAuthenticated()) throw new Error('Unauthorized');
-    
-    // Add all=true parameter to bypass the 'Published' filter in doGet
-    const url = `${SCRIPT_URL}?type=${type}&all=true`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-    
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
-}
+    const authed = await isAuthenticated();
+    if (!authed) throw new Error('Unauthorized');
 
-/**
- * Generic function to send POST requests
- */
-async function sendPostRequest(action, payload) {
-    if (!isAuthenticated()) throw new Error('Unauthorized');
+    const { data, error } = await supabase
+        .from(type)
+        .select('*')
+        .order('date', { ascending: false });
 
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action,
-                ...payload
-            })
-        });
-        
-        const result = await response.json();
-        if (result.result !== 'success') {
-            throw new Error(result.message || 'Operation failed');
-        }
-        return result;
-    } catch (err) {
-        console.error(`Admin API Error (${action}):`, err);
-        throw err;
-    }
+    if (error) throw new Error(`Fetch failed: ${error.message}`);
+    return data ?? [];
 }
 
 // ==========================================
@@ -108,17 +42,46 @@ async function sendPostRequest(action, payload) {
 // ==========================================
 export const adminPosts = {
     getAll: () => fetchAllForAdmin('posts'),
-    
+
     getBySlug: async (slug) => {
-        const data = await fetchAllForAdmin('posts');
-        return data.find(p => p.slug === slug) || null;
+        const { data, error } = await supabase
+            .from('posts')
+            .select('*')
+            .eq('slug', slug)
+            .single();
+        if (error) return null;
+        return data;
     },
 
-    create: (data) => sendPostRequest('create_post', { data }),
-    
-    update: (slug, data) => sendPostRequest('update_post', { slug, data }),
-    
-    delete: (slug) => sendPostRequest('delete_post', { slug })
+    create: async (postData) => {
+        const authed = await isAuthenticated();
+        if (!authed) throw new Error('Unauthorized');
+
+        const { error } = await supabase.from('posts').insert([postData]);
+        if (error) throw new Error(error.message);
+        invalidateCache('posts');
+    },
+
+    update: async (slug, postData) => {
+        const authed = await isAuthenticated();
+        if (!authed) throw new Error('Unauthorized');
+
+        const { error } = await supabase
+            .from('posts')
+            .update({ ...postData, updated_at: new Date().toISOString() })
+            .eq('slug', slug);
+        if (error) throw new Error(error.message);
+        invalidateCache('posts');
+    },
+
+    delete: async (slug) => {
+        const authed = await isAuthenticated();
+        if (!authed) throw new Error('Unauthorized');
+
+        const { error } = await supabase.from('posts').delete().eq('slug', slug);
+        if (error) throw new Error(error.message);
+        invalidateCache('posts');
+    },
 };
 
 // ==========================================
@@ -126,15 +89,44 @@ export const adminPosts = {
 // ==========================================
 export const adminTemplates = {
     getAll: () => fetchAllForAdmin('templates'),
-    
+
     getBySlug: async (slug) => {
-        const data = await fetchAllForAdmin('templates');
-        return data.find(t => t.slug === slug) || null;
+        const { data, error } = await supabase
+            .from('templates')
+            .select('*')
+            .eq('slug', slug)
+            .single();
+        if (error) return null;
+        return data;
     },
 
-    create: (data) => sendPostRequest('create_template', { data }),
-    
-    update: (slug, data) => sendPostRequest('update_template', { slug, data }),
-    
-    delete: (slug) => sendPostRequest('delete_template', { slug })
+    create: async (templateData) => {
+        const authed = await isAuthenticated();
+        if (!authed) throw new Error('Unauthorized');
+
+        const { error } = await supabase.from('templates').insert([templateData]);
+        if (error) throw new Error(error.message);
+        invalidateCache('templates');
+    },
+
+    update: async (slug, templateData) => {
+        const authed = await isAuthenticated();
+        if (!authed) throw new Error('Unauthorized');
+
+        const { error } = await supabase
+            .from('templates')
+            .update({ ...templateData, updated_at: new Date().toISOString() })
+            .eq('slug', slug);
+        if (error) throw new Error(error.message);
+        invalidateCache('templates');
+    },
+
+    delete: async (slug) => {
+        const authed = await isAuthenticated();
+        if (!authed) throw new Error('Unauthorized');
+
+        const { error } = await supabase.from('templates').delete().eq('slug', slug);
+        if (error) throw new Error(error.message);
+        invalidateCache('templates');
+    },
 };

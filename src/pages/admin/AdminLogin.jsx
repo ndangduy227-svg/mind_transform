@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import { login } from '../../services/cmsAdminService';
 
 export default function AdminLogin() {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -16,7 +16,7 @@ export default function AdminLogin() {
         setError('');
         setLoading(true);
 
-        const result = await login(username, password);
+        const result = await login(email, password);
 
         if (result.success) {
             navigate('/admin');
@@ -56,12 +56,12 @@ export default function AdminLogin() {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-xs font-medium text-slate-400 mb-1">Tài khoản</label>
+                            <label className="block text-xs font-medium text-slate-400 mb-1">Email</label>
                             <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                placeholder="Nhập tài khoản..."
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="admin@example.com"
                                 className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 transition-all placeholder:text-slate-600"
                                 required
                             />
@@ -85,7 +85,7 @@ export default function AdminLogin() {
 
                         <button
                             type="submit"
-                            disabled={loading || !password || !username}
+                            disabled={loading || !password || !email}
                             className="w-full bg-teal-500 hover:bg-teal-400 text-white font-medium py-3 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
                         >
                             {loading ? (

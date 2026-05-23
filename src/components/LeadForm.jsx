@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, CheckCircle, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export default function LeadForm({ isOpen, onClose }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,9 +14,6 @@ export default function LeadForm({ isOpen, onClose }) {
         need: ''
     });
 
-    // Thay URL này bằng URL bạn nhận được sau khi deploy Apps Script
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTOHDWp8w7M5RtSXxA_lqkQTA_1pqGw_xyO_bPkj0I32P7ck5U5GGe4fBE77ZAM9xEhg/exec";
-
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -24,30 +22,20 @@ export default function LeadForm({ isOpen, onClose }) {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Tạo form data để gửi
-        const form = new FormData();
-        form.append('name', formData.name);
-        form.append('phone', formData.phone);
-        form.append('email', formData.email);
-        form.append('company', formData.company);
-        form.append('need', formData.need);
-
         try {
-            // Gửi request đến Google Apps Script
-            // Lưu ý: mode 'no-cors' là cần thiết khi gửi từ browser đến Google Script
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: form,
-                mode: 'no-cors'
-            });
+            const { error } = await supabase.from('leads').insert([{
+                name: formData.name,
+                phone: formData.phone,
+                email: formData.email,
+                company: formData.company,
+                need: formData.need,
+            }]);
 
-            // Giả lập delay một chút cho mượt
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (error) throw error;
 
             setIsSuccess(true);
             setFormData({ name: '', phone: '', email: '', company: '', need: '' });
 
-            // Tự động đóng sau 3s
             setTimeout(() => {
                 setIsSuccess(false);
                 onClose();
