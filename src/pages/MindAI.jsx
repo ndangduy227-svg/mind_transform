@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Sparkles, CheckCircle2, Loader2, Send, ArrowRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import UnderstandingScore from '../components/MindAI/UnderstandingScore';
-import { GROQ_API_KEY, SCRIPT_URL } from '../config';
+import { GROQ_API_KEY } from '../config';
+import { supabase } from '../lib/supabase';
 
 export default function MindAI() {
     const [step, setStep] = useState('input'); // input, chatting, submitting, success
@@ -138,16 +139,11 @@ export default function MindAI() {
 
         setStep('submitting');
         try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    action: 'submit_research',
-                    email,
-                    history: [...history, { user: "FINISHED", ai: "FINISHED" }]
-                })
-            });
+            const { error } = await supabase.from('research').insert([{
+                email,
+                conversation: [...history, { user: "FINISHED", ai: "FINISHED" }]
+            }]);
+            if (error) throw error;
             setStep('success');
         } catch (err) {
             setStep('chatting'); // Revert on error
