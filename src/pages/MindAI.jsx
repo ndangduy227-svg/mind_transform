@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Sparkles, CheckCircle2, Loader2, Send, ArrowRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import UnderstandingScore from '../components/MindAI/UnderstandingScore';
-import { GEMINI_API_KEY, SCRIPT_URL } from '../config';
+import { GROQ_API_KEY, SCRIPT_URL } from '../config';
 
 export default function MindAI() {
     const [step, setStep] = useState('input'); // input, chatting, submitting, success
@@ -95,11 +95,20 @@ export default function MindAI() {
                 }
             `;
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GROQ_API_KEY}`
+                },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
+                    model: 'llama-3.3-70b-versatile',
+                    messages: [
+                        { role: 'system', content: 'You are a JSON-only responder. Always reply with valid JSON, no markdown.' },
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 1024
                 })
             });
 
@@ -109,7 +118,7 @@ export default function MindAI() {
                 throw new Error(data.error.message);
             }
 
-            let text = data.candidates[0].content.parts[0].text;
+            let text = data.choices[0].message.content;
             text = text.replace(/```json/g, '').replace(/```/g, '').trim();
             const result = JSON.parse(text);
 
@@ -168,7 +177,7 @@ export default function MindAI() {
                             >
                                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-teal-400 text-sm font-medium mb-8">
                                     <Sparkles className="w-4 h-4" />
-                                    Powered by Gemini 2.0 Flash
+                                    Powered by Llama 3.3 70B
                                 </div>
                                 <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
                                     Mind AI Agent
