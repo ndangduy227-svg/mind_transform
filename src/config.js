@@ -1,2 +1,2 @@
-export const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
-export const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || "";
+// API keys are now server-side only (api/chat.js)
+// No sensitive keys exposed to client
