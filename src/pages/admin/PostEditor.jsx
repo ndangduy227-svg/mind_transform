@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
-import MDEditor from '@uiw/react-md-editor';
+import { Editor } from '@tinymce/tinymce-react';
 import { adminPosts, isAuthenticated } from '../../services/cmsAdminService';
 
 export default function PostEditor() {
@@ -163,13 +163,30 @@ export default function PostEditor() {
                                 />
                             </div>
 
-                            <div data-color-mode="dark">
-                                <label className="block text-sm font-medium text-slate-400 mb-2">Nội dung (Markdown)</label>
-                                <MDEditor
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-2">Nội dung</label>
+                                <Editor
+                                    tinymceScriptSrc="/tinymce/tinymce.min.js"
                                     value={formData.content}
-                                    onChange={(val) => setFormData({...formData, content: val || ''})}
-                                    height={500}
-                                    className="!bg-white/5 !border-white/10"
+                                    onEditorChange={(val) => setFormData({...formData, content: val || ''})}
+                                    init={{
+                                        height: 500,
+                                        menubar: true,
+                                        skin: 'oxide-dark',
+                                        content_css: 'dark',
+                                        plugins: [
+                                            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+                                            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                            'insertdatetime', 'media', 'table', 'preview', 'help', 'wordcount'
+                                        ],
+                                        toolbar: 'undo redo | blocks | bold italic forecolor | ' +
+                                            'alignleft aligncenter alignright alignjustify | ' +
+                                            'bullist numlist outdent indent | link image media table | ' +
+                                            'removeformat | code fullscreen | help',
+                                        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; color: #e2e8f0; background-color: #0f172a; }',
+                                        promotion: false,
+                                        branding: false,
+                                    }}
                                 />
                             </div>
                         </div>

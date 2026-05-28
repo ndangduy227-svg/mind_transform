@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Loader2, ExternalLink, FileText, Layers, ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import Markdown from 'react-markdown';
+import { isHTMLContent } from '../utils/contentRenderer';
 import { templates as templatesService } from '../services/cmsService';
 import { useModal } from '../context/ModalContext';
 
@@ -251,7 +252,11 @@ export default function TemplateDetail() {
                                     </h2>
                                     <div className="bg-gradient-to-br from-teal-900/10 to-indigo-900/10 border border-white/5 rounded-2xl p-6">
                                         <div className="prose prose-invert prose-sm max-w-none prose-headings:text-white prose-a:text-teal-400 prose-strong:text-white">
-                                            <Markdown>{template.use_case}</Markdown>
+                                            {isHTMLContent(template.use_case) ? (
+                                                <div dangerouslySetInnerHTML={{ __html: template.use_case }} />
+                                            ) : (
+                                                <Markdown>{template.use_case}</Markdown>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -265,7 +270,11 @@ export default function TemplateDetail() {
                                         Mô tả chi tiết
                                     </h2>
                                     <div className="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-a:text-teal-400 hover:prose-a:text-teal-300 prose-strong:text-white">
-                                        <Markdown>{template.description}</Markdown>
+                                        {isHTMLContent(template.description) ? (
+                                            <div dangerouslySetInnerHTML={{ __html: template.description }} />
+                                        ) : (
+                                            <Markdown>{template.description}</Markdown>
+                                        )}
                                     </div>
                                 </div>
                             )}

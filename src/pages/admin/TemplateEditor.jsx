@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, Image as ImageIcon, Plus, X } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
-import MDEditor from '@uiw/react-md-editor';
+import { Editor } from '@tinymce/tinymce-react';
 import { adminTemplates, isAuthenticated } from '../../services/cmsAdminService';
 
 export default function TemplateEditor() {
@@ -200,8 +200,8 @@ export default function TemplateEditor() {
                                 />
                             </div>
 
-                            {/* Markdown Tabs */}
-                            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden" data-color-mode="dark">
+                            {/* Rich Text Tabs */}
+                            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
                                 <div className="flex border-b border-white/10">
                                     <button
                                         onClick={() => setActiveTab('description')}
@@ -218,18 +218,52 @@ export default function TemplateEditor() {
                                 </div>
                                 <div className="p-1">
                                     {activeTab === 'description' ? (
-                                        <MDEditor
+                                        <Editor
+                                            tinymceScriptSrc="/tinymce/tinymce.min.js"
                                             value={formData.description}
-                                            onChange={(val) => setFormData({...formData, description: val || ''})}
-                                            height={400}
-                                            className="!bg-transparent !border-0"
+                                            onEditorChange={(val) => setFormData({...formData, description: val || ''})}
+                                            init={{
+                                                height: 400,
+                                                menubar: true,
+                                                skin: 'oxide-dark',
+                                                content_css: 'dark',
+                                                plugins: [
+                                                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+                                                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                                    'insertdatetime', 'media', 'table', 'preview', 'help', 'wordcount'
+                                                ],
+                                                toolbar: 'undo redo | blocks | bold italic forecolor | ' +
+                                                    'alignleft aligncenter alignright alignjustify | ' +
+                                                    'bullist numlist outdent indent | link image media table | ' +
+                                                    'removeformat | code fullscreen | help',
+                                                content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; color: #e2e8f0; background-color: #0f172a; }',
+                                                promotion: false,
+                                                branding: false,
+                                            }}
                                         />
                                     ) : (
-                                        <MDEditor
+                                        <Editor
+                                            tinymceScriptSrc="/tinymce/tinymce.min.js"
                                             value={formData.use_case}
-                                            onChange={(val) => setFormData({...formData, use_case: val || ''})}
-                                            height={400}
-                                            className="!bg-transparent !border-0"
+                                            onEditorChange={(val) => setFormData({...formData, use_case: val || ''})}
+                                            init={{
+                                                height: 400,
+                                                menubar: true,
+                                                skin: 'oxide-dark',
+                                                content_css: 'dark',
+                                                plugins: [
+                                                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+                                                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                                    'insertdatetime', 'media', 'table', 'preview', 'help', 'wordcount'
+                                                ],
+                                                toolbar: 'undo redo | blocks | bold italic forecolor | ' +
+                                                    'alignleft aligncenter alignright alignjustify | ' +
+                                                    'bullist numlist outdent indent | link image media table | ' +
+                                                    'removeformat | code fullscreen | help',
+                                                content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; color: #e2e8f0; background-color: #0f172a; }',
+                                                promotion: false,
+                                                branding: false,
+                                            }}
                                         />
                                     )}
                                 </div>

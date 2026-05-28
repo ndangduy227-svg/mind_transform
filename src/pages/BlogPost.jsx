@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Calendar, User, ArrowLeft, Loader2, List } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import Markdown from 'react-markdown';
+import { isHTMLContent, extractHeadings, addHeadingIds } from '../utils/contentRenderer';
 import { getGoogleDriveImageUrl } from '../utils/imageHelper';
 import SidebarCTA from '../components/SidebarCTA';
 import { posts as postsService } from '../services/cmsService';
@@ -22,36 +23,8 @@ export default function BlogPost() {
                 if (foundPost) {
                     setPost(foundPost);
 
-                    // Extract headings for TOC with numbering logic
-                    const lines = foundPost.content.split('\n');
-                    let h1Count = 0;
-                    let h2Count = 0;
-                    let h3Count = 0;
-
-                    const extractedHeadings = lines
-                        .filter(line => line.startsWith('#'))
-                        .map(line => {
-                            const level = line.match(/^#+/)[0].length;
-                            const text = line.replace(/^#+\s+/, '');
-                            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-
-                            let number = '';
-                            if (level === 1) {
-                                h1Count++;
-                                h2Count = 0;
-                                h3Count = 0;
-                                number = `${h1Count}.`;
-                            } else if (level === 2) {
-                                h2Count++;
-                                h3Count = 0;
-                                number = `${h1Count}.${h2Count}`;
-                            } else if (level === 3) {
-                                h3Count++;
-                                number = `${h1Count}.${h2Count}.${h3Count}`;
-                            }
-
-                            return { level, text, id, number };
-                        });
+                    // Extract headings for TOC (supports both Markdown and HTML)
+                    const extractedHeadings = extractHeadings(foundPost.content);
                     setHeadings(extractedHeadings);
                 } else {
                     setError("Bài viết không tồn tại.");
@@ -148,33 +121,37 @@ export default function BlogPost() {
                             )}
 
                             <div className="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-a:text-teal-400 hover:prose-a:text-teal-300 prose-strong:text-white prose-img:rounded-xl">
-                                <Markdown
-                                    components={{
-                                        img: ({ node, ...props }) => {
-                                            const realSrc = getGoogleDriveImageUrl(props.src);
-                                            return (
-                                                <figure className="my-8">
-                                                    <img {...props} src={realSrc} alt={props.alt} className="w-full rounded-xl border border-white/10" />
-                                                    {props.alt && <figcaption className="text-center text-sm text-slate-400 mt-2 italic">{props.alt}</figcaption>}
-                                                </figure>
-                                            );
-                                        },
-                                        h1: ({ node, ...props }) => {
-                                            const id = props.children.toString().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-                                            return <h1 id={id} {...props} />;
-                                        },
-                                        h2: ({ node, ...props }) => {
-                                            const id = props.children.toString().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-                                            return <h2 id={id} {...props} />;
-                                        },
-                                        h3: ({ node, ...props }) => {
-                                            const id = props.children.toString().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-                                            return <h3 id={id} {...props} />;
-                                        }
-                                    }}
-                                >
-                                    {processedContent}
-                                </Markdown>
+                                {isHTMLContent(processedContent) ? (
+                                    <div dangerouslySetInnerHTML={{ __html: addHeadingIds(processedContent) }} />
+                                ) : (
+                                    <Markdown
+                                        components={{
+                                            img: ({ node, ...props }) => {
+                                                const realSrc = getGoogleDriveImageUrl(props.src);
+                                                return (
+                                                    <figure className="my-8">
+                                                        <img {...props} src={realSrc} alt={props.alt} className="w-full rounded-xl border border-white/10" />
+                                                        {props.alt && <figcaption className="text-center text-sm text-slate-400 mt-2 italic">{props.alt}</figcaption>}
+                                                    </figure>
+                                                );
+                                            },
+                                            h1: ({ node, ...props }) => {
+                                                const id = props.children.toString().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                                                return <h1 id={id} {...props} />;
+                                            },
+                                            h2: ({ node, ...props }) => {
+                                                const id = props.children.toString().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                                                return <h2 id={id} {...props} />;
+                                            },
+                                            h3: ({ node, ...props }) => {
+                                                const id = props.children.toString().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                                                return <h3 id={id} {...props} />;
+                                            }
+                                        }}
+                                    >
+                                        {processedContent}
+                                    </Markdown>
+                                )}
                             </div>
                         </motion.div>
                     </div>
