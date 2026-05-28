@@ -111,3 +111,63 @@ export const adminTemplates = {
         invalidateCache('templates');
     },
 };
+
+// ==========================================
+// SKILLS CRUD
+// ==========================================
+export const adminSkills = {
+    getAll: async () => {
+        const { data, error } = await supabase
+            .from('skills')
+            .select('*')
+            .order('type', { ascending: true })     // master first
+            .order('priority', { ascending: false });
+        if (error) throw new Error(`Fetch failed: ${error.message}`);
+        return data ?? [];
+    },
+
+    getBySlug: async (slug) => {
+        const { data, error } = await supabase
+            .from('skills')
+            .select('*')
+            .eq('slug', slug)
+            .single();
+        if (error) return null;
+        return data;
+    },
+
+    create: async (skillData) => {
+        const { error } = await supabase.from('skills').insert([skillData]);
+        if (error) throw new Error(error.message);
+    },
+
+    update: async (slug, skillData) => {
+        const { error } = await supabase
+            .from('skills')
+            .update({ ...skillData, updated_at: new Date().toISOString() })
+            .eq('slug', slug);
+        if (error) throw new Error(error.message);
+    },
+
+    delete: async (slug) => {
+        const { error } = await supabase.from('skills').delete().eq('slug', slug);
+        if (error) throw new Error(error.message);
+    },
+
+    toggleActive: async (slug, isActive) => {
+        const { error } = await supabase
+            .from('skills')
+            .update({ is_active: isActive, updated_at: new Date().toISOString() })
+            .eq('slug', slug);
+        if (error) throw new Error(error.message);
+    },
+
+    hasMaster: async () => {
+        const { data } = await supabase
+            .from('skills')
+            .select('id')
+            .eq('type', 'master')
+            .limit(1);
+        return data && data.length > 0;
+    },
+};

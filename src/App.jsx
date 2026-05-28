@@ -15,6 +15,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import PostEditor from './pages/admin/PostEditor';
 import TemplateEditor from './pages/admin/TemplateEditor';
 import BulkImport from './pages/admin/BulkImport';
+import SkillsList from './pages/admin/SkillsList';
+import SkillEditor from './pages/admin/SkillEditor';
 import LeadForm from './components/LeadForm';
 import { isAuthenticated } from './services/cmsAdminService';
 import { Loader2 } from 'lucide-react';
@@ -77,6 +79,16 @@ function AppContent() {
                 <Route path="/admin/import" element={
                     <ProtectedRoute>
                         <BulkImport />
+                    </ProtectedRoute>
+                } />
+                <Route path="/admin/skills" element={
+                    <ProtectedRoute>
+                        <SkillsList />
+                    </ProtectedRoute>
+                } />
+                <Route path="/admin/skill/:slug" element={
+                    <ProtectedRoute>
+                        <SkillEditor />
                     </ProtectedRoute>
                 } />
 
