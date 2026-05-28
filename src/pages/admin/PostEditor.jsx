@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { Editor } from '@tinymce/tinymce-react';
-import { adminPosts, isAuthenticated } from '../../services/cmsAdminService';
+import { adminPosts } from '../../services/cmsAdminService';
 
 export default function PostEditor() {
     const { slug } = useParams();
@@ -26,11 +26,6 @@ export default function PostEditor() {
     });
 
     useEffect(() => {
-        if (!isAuthenticated()) {
-            navigate('/admin/login');
-            return;
-        }
-
         if (!isNew) {
             loadPost();
         }

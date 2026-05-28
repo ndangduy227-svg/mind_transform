@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FileText, Layers, LogOut, Plus, Edit2, Trash2, Loader2, ExternalLink, RefreshCw } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
-import { adminPosts, adminTemplates, isAuthenticated, logout } from '../../services/cmsAdminService';
+import { adminPosts, adminTemplates, logout } from '../../services/cmsAdminService';
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
@@ -13,12 +13,8 @@ export default function AdminDashboard() {
     const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
-        if (!isAuthenticated()) {
-            navigate('/admin/login');
-            return;
-        }
         loadData();
-    }, [navigate]);
+    }, []);
 
     const loadData = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
@@ -33,7 +29,6 @@ export default function AdminDashboard() {
             setTemplates(templatesData);
         } catch (err) {
             console.error('Lỗi tải dữ liệu CMS:', err);
-            alert('Không thể tải dữ liệu. Vui lòng tải lại trang.');
         } finally {
             setLoading(false);
             setRefreshing(false);

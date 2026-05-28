@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { ModalProvider, useModal } from './context/ModalContext';
@@ -16,9 +16,25 @@ import PostEditor from './pages/admin/PostEditor';
 import TemplateEditor from './pages/admin/TemplateEditor';
 import LeadForm from './components/LeadForm';
 import { isAuthenticated } from './services/cmsAdminService';
+import { Loader2 } from 'lucide-react';
 
 function ProtectedRoute({ children }) {
-    if (!isAuthenticated()) {
+    const [authState, setAuthState] = useState('loading'); // loading | authed | denied
+
+    useEffect(() => {
+        isAuthenticated().then(authed => {
+            setAuthState(authed ? 'authed' : 'denied');
+        });
+    }, []);
+
+    if (authState === 'loading') {
+        return (
+            <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
+            </div>
+        );
+    }
+    if (authState === 'denied') {
         return <Navigate to="/admin/login" replace />;
     }
     return children;

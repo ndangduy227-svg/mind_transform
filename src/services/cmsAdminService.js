@@ -1,6 +1,8 @@
 import { supabase } from '../lib/supabase';
 import { invalidateCache } from './cmsService';
 
+// Auth check — returns Promise<boolean>
+// Supabase RLS handles actual data protection at database level
 export async function isAuthenticated() {
     const { data: { session } } = await supabase.auth.getSession();
     return !!session;
@@ -25,9 +27,6 @@ export async function logout() {
 }
 
 export async function fetchAllForAdmin(type) {
-    const authed = await isAuthenticated();
-    if (!authed) throw new Error('Unauthorized');
-
     const { data, error } = await supabase
         .from(type)
         .select('*')
@@ -54,18 +53,12 @@ export const adminPosts = {
     },
 
     create: async (postData) => {
-        const authed = await isAuthenticated();
-        if (!authed) throw new Error('Unauthorized');
-
         const { error } = await supabase.from('posts').insert([postData]);
         if (error) throw new Error(error.message);
         invalidateCache('posts');
     },
 
     update: async (slug, postData) => {
-        const authed = await isAuthenticated();
-        if (!authed) throw new Error('Unauthorized');
-
         const { error } = await supabase
             .from('posts')
             .update({ ...postData, updated_at: new Date().toISOString() })
@@ -75,9 +68,6 @@ export const adminPosts = {
     },
 
     delete: async (slug) => {
-        const authed = await isAuthenticated();
-        if (!authed) throw new Error('Unauthorized');
-
         const { error } = await supabase.from('posts').delete().eq('slug', slug);
         if (error) throw new Error(error.message);
         invalidateCache('posts');
@@ -101,18 +91,12 @@ export const adminTemplates = {
     },
 
     create: async (templateData) => {
-        const authed = await isAuthenticated();
-        if (!authed) throw new Error('Unauthorized');
-
         const { error } = await supabase.from('templates').insert([templateData]);
         if (error) throw new Error(error.message);
         invalidateCache('templates');
     },
 
     update: async (slug, templateData) => {
-        const authed = await isAuthenticated();
-        if (!authed) throw new Error('Unauthorized');
-
         const { error } = await supabase
             .from('templates')
             .update({ ...templateData, updated_at: new Date().toISOString() })
@@ -122,9 +106,6 @@ export const adminTemplates = {
     },
 
     delete: async (slug) => {
-        const authed = await isAuthenticated();
-        if (!authed) throw new Error('Unauthorized');
-
         const { error } = await supabase.from('templates').delete().eq('slug', slug);
         if (error) throw new Error(error.message);
         invalidateCache('templates');

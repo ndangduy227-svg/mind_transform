@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, Image as ImageIcon, Plus, X } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { Editor } from '@tinymce/tinymce-react';
-import { adminTemplates, isAuthenticated } from '../../services/cmsAdminService';
+import { adminTemplates } from '../../services/cmsAdminService';
 
 export default function TemplateEditor() {
     const { slug } = useParams();
@@ -34,11 +34,6 @@ export default function TemplateEditor() {
     });
 
     useEffect(() => {
-        if (!isAuthenticated()) {
-            navigate('/admin/login');
-            return;
-        }
-
         if (!isNew) {
             loadTemplate();
         }
