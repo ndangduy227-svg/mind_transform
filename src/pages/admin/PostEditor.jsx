@@ -169,6 +169,7 @@ export default function PostEditor() {
                                     tinymceScriptSrc="/tinymce/tinymce.min.js"
                                     value={formData.content}
                                     onEditorChange={(val) => setFormData({...formData, content: val || ''})}
+                                    licenseKey="gpl"
                                     init={{
                                         height: 500,
                                         menubar: true,

@@ -220,6 +220,7 @@ export default function TemplateEditor() {
                                     {activeTab === 'description' ? (
                                         <Editor
                                             tinymceScriptSrc="/tinymce/tinymce.min.js"
+                                            licenseKey="gpl"
                                             value={formData.description}
                                             onEditorChange={(val) => setFormData({...formData, description: val || ''})}
                                             init={{
@@ -244,6 +245,7 @@ export default function TemplateEditor() {
                                     ) : (
                                         <Editor
                                             tinymceScriptSrc="/tinymce/tinymce.min.js"
+                                            licenseKey="gpl"
                                             value={formData.use_case}
                                             onEditorChange={(val) => setFormData({...formData, use_case: val || ''})}
                                             init={{
