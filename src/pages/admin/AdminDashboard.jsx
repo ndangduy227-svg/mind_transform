@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FileText, Layers, LogOut, Plus, Edit2, Trash2, Loader2, ExternalLink, RefreshCw } from 'lucide-react';
+import { FileText, Layers, LogOut, Plus, Edit2, Trash2, Loader2, ExternalLink, RefreshCw, Upload } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { adminPosts, adminTemplates, logout } from '../../services/cmsAdminService';
 
@@ -128,6 +128,12 @@ export default function AdminDashboard() {
                         </div>
                         
                         <div className="flex gap-3">
+                            <Link
+                                to="/admin/import"
+                                className="flex items-center gap-2 px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-colors border border-white/10 text-sm"
+                            >
+                                <Upload className="w-4 h-4" /> Import
+                            </Link>
                             <button
                                 onClick={() => loadData(true)}
                                 className="flex items-center gap-2 px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-colors border border-white/10"

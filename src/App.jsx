@@ -14,6 +14,7 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import PostEditor from './pages/admin/PostEditor';
 import TemplateEditor from './pages/admin/TemplateEditor';
+import BulkImport from './pages/admin/BulkImport';
 import LeadForm from './components/LeadForm';
 import { isAuthenticated } from './services/cmsAdminService';
 import { Loader2 } from 'lucide-react';
@@ -71,6 +72,11 @@ function AppContent() {
                 <Route path="/admin/template/:slug" element={
                     <ProtectedRoute>
                         <TemplateEditor />
+                    </ProtectedRoute>
+                } />
+                <Route path="/admin/import" element={
+                    <ProtectedRoute>
+                        <BulkImport />
                     </ProtectedRoute>
                 } />
 
