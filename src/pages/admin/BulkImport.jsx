@@ -6,6 +6,9 @@ import { supabase } from '../../lib/supabase';
 import { invalidateCache } from '../../services/cmsService';
 
 // JSON schema definitions
+// Các trường ảnh — sẽ tự động loại bỏ nếu rỗng trước khi insert
+const IMAGE_FIELDS = ['cover_image', 'thumbnail', 'screenshots'];
+
 const POST_SCHEMA = {
     required: ['title', 'slug', 'content'],
     fields: {
@@ -13,7 +16,7 @@ const POST_SCHEMA = {
         slug: 'Đường dẫn (VD: bai-viet-moi)',
         summary: 'Mô tả ngắn',
         content: 'Nội dung HTML',
-        cover_image: 'URL ảnh bìa',
+        cover_image: '(tuỳ chọn) URL ảnh bìa — bỏ trống nếu chưa có',
         category: 'Strategy | Technology | Methodology | Data | Case Study',
         author: 'Tên tác giả',
         status: 'Draft | Published',
@@ -31,8 +34,8 @@ const TEMPLATE_SCHEMA = {
         use_case: 'Bài toán giải quyết (HTML)',
         category: 'CRM | HR | Project Management | Finance | Operations | Marketing | Sales',
         industry: 'Ngành nghề',
-        thumbnail: 'URL ảnh đại diện',
-        screenshots: 'Danh sách URL ảnh, phân cách bằng dấu phẩy',
+        thumbnail: '(tuỳ chọn) URL ảnh đại diện — bỏ trống nếu chưa có',
+        screenshots: '(tuỳ chọn) Danh sách URL ảnh, phân cách bằng dấu phẩy',
         template_link: 'Link Lark Template gốc',
         form_link: 'Link form đăng ký',
         difficulty: 'Beginner | Intermediate | Advanced',
@@ -47,7 +50,6 @@ const SAMPLE_POSTS = [
         slug: "chuyen-doi-so-doanh-nghiep-vua-va-nho",
         summary: "Hướng dẫn từng bước triển khai chuyển đổi số cho SME với nguồn lực hạn chế.",
         content: "<h2>Tại sao SME cần chuyển đổi số?</h2><p>Nội dung bài viết ở đây...</p>",
-        cover_image: "",
         category: "Strategy",
         author: "Mind.Transform",
         status: "Draft",
@@ -64,7 +66,6 @@ const SAMPLE_TEMPLATES = [
         use_case: "<p>Bài toán: Theo dõi lead từ tiếp cận đến chốt deal...</p>",
         category: "CRM",
         industry: "Sales, Retail",
-        thumbnail: "",
         difficulty: "Beginner",
         status: "Draft",
         date: new Date().toISOString().split('T')[0]
@@ -206,6 +207,24 @@ export default function BulkImport() {
         setItems(items.filter((_, i) => i !== index));
     };
 
+    /** Loại bỏ các trường ảnh rỗng + trường không thuộc schema để tránh lỗi insert */
+    const cleanItemForInsert = (item) => {
+        const cleaned = { ...item };
+        // Xoá trường ảnh rỗng — để Supabase dùng default (null)
+        for (const field of IMAGE_FIELDS) {
+            if (field in cleaned && (!cleaned[field] || !cleaned[field].toString().trim())) {
+                delete cleaned[field];
+            }
+        }
+        // Xoá các trường undefined hoặc rỗng không cần thiết
+        for (const key of Object.keys(cleaned)) {
+            if (cleaned[key] === undefined || cleaned[key] === null) {
+                delete cleaned[key];
+            }
+        }
+        return cleaned;
+    };
+
     const handleImport = async () => {
         if (items.length === 0) return;
 
@@ -215,7 +234,7 @@ export default function BulkImport() {
         // Insert in batches of 10
         const batchSize = 10;
         for (let i = 0; i < items.length; i += batchSize) {
-            const batch = items.slice(i, i + batchSize);
+            const batch = items.slice(i, i + batchSize).map(cleanItemForInsert);
             const table = importType;
 
             const { error } = await supabase.from(table).insert(batch);
