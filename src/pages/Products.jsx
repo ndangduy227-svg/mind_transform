@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Database, FileSpreadsheet, BarChart3, Globe, Code, Cloud } from 'lucide-react';
 
@@ -71,7 +72,19 @@ export default function Products() {
     ];
 
     return (
-        <div className="py-20 px-6">
+        <>
+            <Helmet>
+                <title>Sản phẩm & Giải pháp | Mind.Transform</title>
+                <meta name="description" content="Khám phá các giải pháp chuyển đổi số: Lark Suite, CRM, tự động hoá quy trình, phân tích dữ liệu cho doanh nghiệp." />
+                <link rel="canonical" href="https://mind-transform.vercel.app/products" />
+                <meta property="og:title" content="Sản phẩm & Giải pháp | Mind.Transform" />
+                <meta property="og:description" content="Khám phá các giải pháp chuyển đổi số: Lark Suite, CRM, tự động hoá quy trình." />
+                <meta property="og:url" content="https://mind-transform.vercel.app/products" />
+                <meta property="og:type" content="website" />
+                <meta name="twitter:card" content="summary_large_image" />
+            </Helmet>
+
+            <div className="py-20 px-6">
             <div className="max-w-7xl mx-auto">
                 {/* Header Quote */}
                 <motion.div
@@ -100,5 +113,6 @@ export default function Products() {
                 </div>
             </div>
         </div>
+        </>
     );
 }

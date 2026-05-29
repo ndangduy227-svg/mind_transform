@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Calendar, User, ArrowRight, Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -158,7 +159,19 @@ export default function Blog() {
     const categories = [...Object.keys(CATEGORY_INFO), ...Object.keys(groupedPosts).filter(c => !CATEGORY_INFO[c])];
 
     return (
-        <div className="py-20 px-6 min-h-screen">
+        <>
+            <Helmet>
+                <title>Blog Chuyển đổi số | Mind.Transform</title>
+                <meta name="description" content="Chia sẻ kiến thức, chiến lược và case study về chuyển đổi số doanh nghiệp từ đội ngũ Mind.Transform." />
+                <link rel="canonical" href="https://mind-transform.vercel.app/blog" />
+                <meta property="og:title" content="Blog Chuyển đổi số | Mind.Transform" />
+                <meta property="og:description" content="Chia sẻ kiến thức, chiến lược và case study về chuyển đổi số doanh nghiệp." />
+                <meta property="og:url" content="https://mind-transform.vercel.app/blog" />
+                <meta property="og:type" content="website" />
+                <meta name="twitter:card" content="summary_large_image" />
+            </Helmet>
+
+            <div className="py-20 px-6 min-h-screen">
             <div className="max-w-7xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -213,5 +226,6 @@ export default function Blog() {
                 )}
             </div>
         </div>
+        </>
     );
 }

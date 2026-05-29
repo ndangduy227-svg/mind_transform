@@ -206,8 +206,14 @@ export default function TemplateLibrary() {
     return (
         <>
             <Helmet>
-                <title>Lark Template Library | Mind.Transform</title>
-                <meta name="description" content="Thư viện Template Lark miễn phí. Browse use case theo ngành, lấy template và bắt đầu triển khai ngay." />
+                <title>Thư viện Lark Templates | Mind.Transform</title>
+                <meta name="description" content="Thư viện template Lark Suite miễn phí cho doanh nghiệp: CRM, HR, Project Management, Finance, Operations." />
+                <link rel="canonical" href="https://mind-transform.vercel.app/templates" />
+                <meta property="og:title" content="Thư viện Lark Templates | Mind.Transform" />
+                <meta property="og:description" content="Thư viện template Lark Suite miễn phí cho doanh nghiệp." />
+                <meta property="og:url" content="https://mind-transform.vercel.app/templates" />
+                <meta property="og:type" content="website" />
+                <meta name="twitter:card" content="summary_large_image" />
             </Helmet>
 
             <div className="py-20 px-6 min-h-screen">

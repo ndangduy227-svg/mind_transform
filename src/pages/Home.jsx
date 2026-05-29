@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Brain, Zap, Layers, ArrowRight, ChevronDown } from 'lucide-react';
 
@@ -16,6 +17,17 @@ const FadeIn = ({ children, delay = 0 }) => (
 export default function Home() {
     return (
         <>
+            <Helmet>
+                <title>Mind.Transform — Agency Chuyển đổi số Doanh nghiệp</title>
+                <meta name="description" content="Tư vấn chiến lược và triển khai chuyển đổi số cho doanh nghiệp Việt Nam. Lark Suite, CRM, HR, tự động hoá quy trình." />
+                <link rel="canonical" href="https://mind-transform.vercel.app/" />
+                <meta property="og:title" content="Mind.Transform — Agency Chuyển đổi số Doanh nghiệp" />
+                <meta property="og:description" content="Tư vấn chiến lược và triển khai chuyển đổi số cho doanh nghiệp Việt Nam." />
+                <meta property="og:url" content="https://mind-transform.vercel.app/" />
+                <meta property="og:type" content="website" />
+                <meta name="twitter:card" content="summary_large_image" />
+            </Helmet>
+
             {/* Hero Section */}
             <section className="relative h-[calc(100vh-80px)] flex flex-col items-center justify-center px-6 overflow-hidden">
                 {/* Background Gradient Blob */}

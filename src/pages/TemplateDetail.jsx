@@ -189,10 +189,17 @@ export default function TemplateDetail() {
         <>
             <Helmet>
                 <title>{template.name} | Lark Template | Mind.Transform</title>
-                <meta name="description" content={template.summary} />
+                <meta name="description" content={template.summary || ''} />
+                <link rel="canonical" href={`https://mind-transform.vercel.app/templates/${template.slug}`} />
                 <meta property="og:title" content={`${template.name} — Lark Template`} />
-                <meta property="og:description" content={template.summary} />
+                <meta property="og:description" content={template.summary || ''} />
+                <meta property="og:url" content={`https://mind-transform.vercel.app/templates/${template.slug}`} />
+                <meta property="og:type" content="product" />
                 {template.thumbnail && <meta property="og:image" content={template.thumbnail} />}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={`${template.name} — Lark Template`} />
+                <meta name="twitter:description" content={template.summary || ''} />
+                {template.thumbnail && <meta name="twitter:image" content={template.thumbnail} />}
             </Helmet>
 
             <div className="min-h-screen py-20 px-6">

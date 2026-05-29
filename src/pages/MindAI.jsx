@@ -138,7 +138,14 @@ export default function MindAI() {
     return (
         <>
             <Helmet>
-                <title>Mind AI Agent | Tư vấn Chuyển đổi số</title>
+                <title>Mind AI Agent | Tư vấn Chuyển đổi số miễn phí</title>
+                <meta name="description" content="AI Agent tư vấn chuyển đổi số miễn phí cho doanh nghiệp. Phân tích vấn đề, đề xuất giải pháp từ Mind.Transform." />
+                <link rel="canonical" href="https://mind-transform.vercel.app/mind-ai" />
+                <meta property="og:title" content="Mind AI Agent | Tư vấn Chuyển đổi số" />
+                <meta property="og:description" content="AI Agent tư vấn chuyển đổi số miễn phí cho doanh nghiệp." />
+                <meta property="og:url" content="https://mind-transform.vercel.app/mind-ai" />
+                <meta property="og:type" content="website" />
+                <meta name="twitter:card" content="summary_large_image" />
             </Helmet>
 
             <div className="min-h-screen pt-24 pb-12 px-4 md:px-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black overflow-hidden relative">
