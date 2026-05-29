@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Save, Loader2, Image as ImageIcon, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Plus, X } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { Editor } from '@tinymce/tinymce-react';
 import { adminTemplates } from '../../services/cmsAdminService';
+import ImageUpload from '../../components/admin/ImageUpload';
 
 export default function TemplateEditor() {
     const { slug } = useParams();
@@ -355,47 +356,32 @@ export default function TemplateEditor() {
                             </div>
 
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-                                <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-                                    <ImageIcon className="w-4 h-4" /> Hình ảnh
-                                </h3>
-                                
-                                <div className="mb-4">
-                                    <label className="block text-xs font-medium text-slate-400 mb-1">Ảnh đại diện (Thumbnail)</label>
-                                    <input
-                                        type="text"
-                                        value={formData.thumbnail}
-                                        onChange={(e) => setFormData({...formData, thumbnail: e.target.value})}
-                                        placeholder="URL ảnh chính..."
-                                        className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none text-sm mb-2"
-                                    />
-                                    {formData.thumbnail && (
-                                        <div className="aspect-video rounded-lg overflow-hidden border border-white/10">
-                                            <img src={formData.thumbnail} alt="Thumbnail" className="w-full h-full object-cover" />
-                                        </div>
-                                    )}
-                                </div>
+                                <ImageUpload
+                                    value={formData.thumbnail}
+                                    onChange={(url) => setFormData({...formData, thumbnail: url})}
+                                    folder="templates"
+                                    label="Ảnh đại diện (Thumbnail)"
+                                />
 
-                                <div className="border-t border-white/10 pt-4">
+                                <div className="border-t border-white/10 pt-4 mt-4">
                                     <label className="block text-xs font-medium text-slate-400 mb-2">Thư viện ảnh (Screenshots)</label>
-                                    <div className="flex gap-2 mb-3">
-                                        <input
-                                            type="text"
-                                            value={newScreenshot}
-                                            onChange={(e) => setNewScreenshot(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && addScreenshot()}
-                                            placeholder="Thêm URL ảnh..."
-                                            className="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none text-sm"
-                                        />
-                                        <button
-                                            onClick={addScreenshot}
-                                            className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-white"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                        </button>
-                                    </div>
+
+                                    {/* Upload new screenshot */}
+                                    <ImageUpload
+                                        value=""
+                                        onChange={(url) => {
+                                            if (url) {
+                                                const updated = [...screenshots, url];
+                                                setScreenshots(updated);
+                                                setFormData(prev => ({ ...prev, screenshots: updated.join(',') }));
+                                            }
+                                        }}
+                                        folder="templates/screenshots"
+                                        label=""
+                                    />
 
                                     {screenshots.length > 0 && (
-                                        <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+                                        <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1 mt-3">
                                             {screenshots.map((url, i) => (
                                                 <div key={i} className="relative group rounded-lg overflow-hidden border border-white/10 bg-black/50">
                                                     <img src={url} alt={`Screenshot ${i}`} className="w-full h-20 object-cover" />

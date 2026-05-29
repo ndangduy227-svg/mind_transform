@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Save, Loader2, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { Editor } from '@tinymce/tinymce-react';
 import { adminPosts } from '../../services/cmsAdminService';
+import ImageUpload from '../../components/admin/ImageUpload';
 
 export default function PostEditor() {
     const { slug } = useParams();
@@ -243,24 +244,12 @@ export default function PostEditor() {
                             </div>
 
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-                                <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-                                    <ImageIcon className="w-4 h-4" /> Ảnh bìa (URL)
-                                </h3>
-                                <input
-                                    type="text"
+                                <ImageUpload
                                     value={formData.cover_image}
-                                    onChange={(e) => setFormData({...formData, cover_image: e.target.value})}
-                                    placeholder="https://..."
-                                    className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none text-sm mb-3"
+                                    onChange={(url) => setFormData({...formData, cover_image: url})}
+                                    folder="posts"
+                                    label="Ảnh bìa"
                                 />
-                                {formData.cover_image && (
-                                    <div className="aspect-video rounded-lg overflow-hidden border border-white/10">
-                                        <img src={formData.cover_image} alt="Preview" className="w-full h-full object-cover" />
-                                    </div>
-                                )}
-                                <p className="text-xs text-slate-500 mt-2">
-                                    * Upload ảnh lên Imgur hoặc Google Drive rồi dán link trực tiếp vào đây.
-                                </p>
                             </div>
                         </div>
 

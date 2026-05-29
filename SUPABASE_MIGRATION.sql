@@ -132,8 +132,43 @@ ALTER TABLE posts ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}';
 
 
 -- ============================================================
+-- PHAN 4: STORAGE POLICIES — Bucket "images"
+-- ============================================================
+-- Bucket "images" da duoc tao voi public = true (ai cung doc duoc).
+-- Can them policy de authenticated users co the upload, update, delete.
+-- ============================================================
+
+-- Xoa policy cu neu ton tai (de co the chay lai file nay nhieu lan)
+DROP POLICY IF EXISTS "authenticated_upload_images" ON storage.objects;
+DROP POLICY IF EXISTS "authenticated_update_images" ON storage.objects;
+DROP POLICY IF EXISTS "authenticated_delete_images" ON storage.objects;
+
+-- Cho phep authenticated users upload file vao bucket images
+CREATE POLICY "authenticated_upload_images"
+    ON storage.objects
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (bucket_id = 'images');
+
+-- Cho phep authenticated users cap nhat file trong bucket images
+CREATE POLICY "authenticated_update_images"
+    ON storage.objects
+    FOR UPDATE
+    TO authenticated
+    USING (bucket_id = 'images');
+
+-- Cho phep authenticated users xoa file trong bucket images
+CREATE POLICY "authenticated_delete_images"
+    ON storage.objects
+    FOR DELETE
+    TO authenticated
+    USING (bucket_id = 'images');
+
+
+-- ============================================================
 -- HOAN TAT! Migration da chay thanh cong.
 -- - Bang skills: da tao voi RLS, index, va rang buoc master duy nhat
 -- - Bang rate_limits: da tao voi RLS (chi service_role truy cap)
 -- - Bang posts: da them cot tags
+-- - Storage: da them RLS policies cho bucket "images" (upload, update, delete)
 -- ============================================================
