@@ -72,6 +72,34 @@ export const adminPosts = {
         if (error) throw new Error(error.message);
         invalidateCache('posts');
     },
+
+    // Bulk operations
+    bulkUpdateStatus: async (slugs, status) => {
+        const { error } = await supabase
+            .from('posts')
+            .update({ status, updated_at: new Date().toISOString() })
+            .in('slug', slugs);
+        if (error) throw new Error(error.message);
+        invalidateCache('posts');
+    },
+
+    bulkUpdateCategory: async (slugs, category) => {
+        const { error } = await supabase
+            .from('posts')
+            .update({ category, updated_at: new Date().toISOString() })
+            .in('slug', slugs);
+        if (error) throw new Error(error.message);
+        invalidateCache('posts');
+    },
+
+    bulkDelete: async (slugs) => {
+        const { error } = await supabase
+            .from('posts')
+            .delete()
+            .in('slug', slugs);
+        if (error) throw new Error(error.message);
+        invalidateCache('posts');
+    },
 };
 
 // ==========================================
@@ -107,6 +135,34 @@ export const adminTemplates = {
 
     delete: async (slug) => {
         const { error } = await supabase.from('templates').delete().eq('slug', slug);
+        if (error) throw new Error(error.message);
+        invalidateCache('templates');
+    },
+
+    // Bulk operations
+    bulkUpdateStatus: async (slugs, status) => {
+        const { error } = await supabase
+            .from('templates')
+            .update({ status, updated_at: new Date().toISOString() })
+            .in('slug', slugs);
+        if (error) throw new Error(error.message);
+        invalidateCache('templates');
+    },
+
+    bulkUpdateCategory: async (slugs, category) => {
+        const { error } = await supabase
+            .from('templates')
+            .update({ category, updated_at: new Date().toISOString() })
+            .in('slug', slugs);
+        if (error) throw new Error(error.message);
+        invalidateCache('templates');
+    },
+
+    bulkDelete: async (slugs) => {
+        const { error } = await supabase
+            .from('templates')
+            .delete()
+            .in('slug', slugs);
         if (error) throw new Error(error.message);
         invalidateCache('templates');
     },
