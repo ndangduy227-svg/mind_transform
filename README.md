@@ -17,7 +17,9 @@
 | Auth | Supabase Auth (email/password) |
 | AI Engine | Groq API — Llama 3.3 70B Versatile |
 | CMS Editor | TinyMCE 7 (self-hosted, GPL license) |
+| Image Storage | Supabase Storage (public bucket, 5MB limit) |
 | Hosting | Vercel (SPA + Serverless Functions) |
+| SEO | react-helmet-async, robots.txt, sitemap.xml, JSON-LD |
 | Icons | Lucide React |
 
 ---
@@ -31,12 +33,15 @@ mind_transform/
 │   └── chat.js                     #   AI chat — skill routing, rate limit, content search
 │
 ├── public/
-│   └── tinymce/                    #   Self-hosted TinyMCE (oxide-dark skin, plugins)
+│   ├── tinymce/                    #   Self-hosted TinyMCE (oxide-dark skin, plugins)
+│   ├── robots.txt                  #   SEO — block /admin, /api, link sitemap
+│   └── sitemap.xml                 #   SEO — static sitemap (5 public routes)
 │
 ├── src/
 │   ├── components/
 │   │   ├── admin/
-│   │   │   └── TagSelector.jsx     #   Pill-toggle multi-select (skills, intake form)
+│   │   │   ├── TagSelector.jsx     #   Pill-toggle multi-select (skills, intake form)
+│   │   │   └── ImageUpload.jsx     #   Drag-drop image upload (Supabase Storage)
 │   │   ├── MindAI/
 │   │   │   ├── ProblemInput.jsx    #   Initial problem input component
 │   │   │   ├── QuestionForm.jsx    #   Follow-up question form
@@ -57,9 +62,9 @@ mind_transform/
 │   │   ├── MindAI.jsx              #   AI Agent — intake form + chat + rate limit
 │   │   └── admin/
 │   │       ├── AdminLogin.jsx      #   Login + forgot password
-│   │       ├── AdminDashboard.jsx  #   CMS dashboard (posts, templates, links)
-│   │       ├── PostEditor.jsx      #   TinyMCE blog editor
-│   │       ├── TemplateEditor.jsx  #   TinyMCE template editor
+│   │       ├── AdminDashboard.jsx  #   CMS dashboard + bulk actions (select, status, category, delete)
+│   │       ├── PostEditor.jsx      #   TinyMCE blog editor + image upload
+│   │       ├── TemplateEditor.jsx  #   TinyMCE template editor + image upload
 │   │       ├── SkillsList.jsx      #   AI Skills management list
 │   │       ├── SkillEditor.jsx     #   Skill editor (master/sub, tags, priority)
 │   │       └── BulkImport.jsx      #   JSON/CSV bulk import
@@ -123,13 +128,30 @@ Hệ thống AI tư vấn tự động cho doanh nghiệp:
 
 | Route | Page | Description |
 |---|---|---|
-| `/admin/login` | Login | Đăng nhập + quên mật khẩu |
-| `/admin` | Dashboard | Quản lý posts & templates |
-| `/admin/post/:slug` | Post Editor | Soạn bài viết (TinyMCE dark theme) |
-| `/admin/template/:slug` | Template Editor | Soạn template (TinyMCE dark theme) |
-| `/admin/skills` | Skills List | Quản lý AI Agent skills |
+| `/admin/login` | Login | Đăng nhập + quên mật khẩu (Supabase Auth) |
+| `/admin` | Dashboard | Quản lý posts & templates + bulk actions |
+| `/admin/post/:slug` | Post Editor | TinyMCE dark theme + drag-drop image upload |
+| `/admin/template/:slug` | Template Editor | TinyMCE dark theme + thumbnail/screenshot upload |
+| `/admin/skills` | Skills List | Quản lý AI Agent skills (master/sub) |
 | `/admin/skill/:slug` | Skill Editor | Tạo/sửa Master Skill & Sub-skills |
 | `/admin/import` | Bulk Import | Import hàng loạt từ JSON/CSV |
+
+**Dashboard Bulk Actions:**
+- Checkbox multi-select + select all
+- Đổi trạng thái hàng loạt (Published / Draft)
+- Đổi danh mục hàng loạt (dropdown)
+- Xoá hàng loạt (có confirm)
+
+### SEO
+
+Mỗi trang public đều có đầy đủ:
+- `<title>` + `<meta description>` duy nhất
+- Canonical URL (`<link rel="canonical">`)
+- Open Graph tags (og:title, og:description, og:url, og:type, og:image)
+- Twitter Card tags (summary_large_image)
+- JSON-LD Article schema cho blog posts
+- `robots.txt` block /admin + /api, link sitemap
+- `sitemap.xml` cho 5 public routes
 
 ---
 
@@ -145,6 +167,14 @@ Hệ thống AI tư vấn tự động cho doanh nghiệp:
 | `rate_limits` | `ip` (text) | Rate limiting — daily_count, session_count, last_reset |
 | `research` | `id` (bigserial) | Chat conversations khi user kết thúc phiên tư vấn |
 
+### Supabase Storage
+
+| Bucket | Access | Config |
+|---|---|---|
+| `images` | Public read, authenticated upload/delete | 5MB limit, PNG/JPEG/WebP/GIF |
+
+Folders: `images/posts/`, `images/templates/`, `images/templates/screenshots/`
+
 ### Row Level Security (RLS)
 
 | Table | `anon` | `authenticated` | `service_role` |
@@ -153,6 +183,7 @@ Hệ thống AI tư vấn tự động cho doanh nghiệp:
 | `templates` | SELECT (published) | Full CRUD | Bypass |
 | `skills` | SELECT (active only) | Full CRUD | Bypass |
 | `rate_limits` | Blocked | Blocked | Bypass (auto) |
+| `storage.objects` | SELECT (images) | Full CRUD (images) | Bypass |
 
 ### Skills Architecture
 
@@ -280,6 +311,7 @@ Chạy `SUPABASE_MIGRATION.sql` trong **Supabase Dashboard > SQL Editor**:
 - Tạo bảng `skills` (với RLS, GIN indexes, unique master constraint)
 - Tạo bảng `rate_limits` (chỉ service_role truy cập)
 - Thêm cột `tags` cho bảng `posts`
+- Storage policies cho bucket `images` (upload, update, delete cho authenticated)
 
 ### 4. Run
 
@@ -345,6 +377,7 @@ Hỗ trợ import hàng loạt posts/templates từ file JSON hoặc CSV tại `
 │  │ research   │  │     │                  │
 │  └────────────┘  │     └──────────────────┘
 │  Auth + RLS      │
+│  Storage (images) │
 └──────────────────┘
 ```
 
