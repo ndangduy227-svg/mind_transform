@@ -323,10 +323,37 @@ function buildPrompt({ masterSkill, subSkills, suggestedLinks, history, message 
 
 // ── Main handler ─────────────────────────────────────────────────────────────
 
+// ── Allowed origins for API requests ─────────────────────────────────────
+const ALLOWED_ORIGINS = [
+    'https://mind-transform.vercel.app',
+    'https://www.mind-transform.vercel.app',
+    'http://localhost:5173',       // dev
+    'http://localhost:4173',       // preview
+];
+
+function isAllowedOrigin(req) {
+    const origin = req.headers['origin'] || '';
+    const referer = req.headers['referer'] || '';
+
+    // Allow if origin matches
+    if (ALLOWED_ORIGINS.some(o => origin.startsWith(o))) return true;
+    // Allow if referer matches
+    if (ALLOWED_ORIGINS.some(o => referer.startsWith(o))) return true;
+    // Allow Vercel preview deployments
+    if (origin.includes('vercel.app') || referer.includes('vercel.app')) return true;
+
+    return false;
+}
+
 export default async function handler(req, res) {
     // Only allow POST
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    // ── Origin validation — block requests from unknown domains ──────
+    if (!isAllowedOrigin(req)) {
+        return res.status(403).json({ error: 'Forbidden: invalid origin' });
     }
 
     const { message, history, intakeForm, messageCount } = req.body;
