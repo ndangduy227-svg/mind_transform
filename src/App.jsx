@@ -8,6 +8,8 @@ import Products from './pages/Products';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import MindAI from './pages/MindAI';
+import HomeV2 from './pages/HomeV2';
+import MINDFramework from './pages/MINDFramework';
 import TemplateLibrary from './pages/TemplateLibrary';
 import TemplateDetail from './pages/TemplateDetail';
 import AdminLogin from './pages/admin/AdminLogin';
@@ -103,6 +105,8 @@ function AppContent() {
                             <Route path="/templates" element={<TemplateLibrary />} />
                             <Route path="/templates/:slug" element={<TemplateDetail />} />
                             <Route path="/mind-ai" element={<MindAI />} />
+                            <Route path="/v2" element={<HomeV2 />} />
+                            <Route path="/mind-framework" element={<MINDFramework />} />
                         </Routes>
                     </Layout>
                 } />
