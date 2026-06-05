@@ -15,17 +15,21 @@ import {
   GraduationCap,
 } from 'lucide-react';
 
+/* ── Animation primitives ─────────────────────────── */
+
 const FadeIn = ({ children, delay = 0, className = '' }) => (
   <motion.div
-    initial={{ opacity: 0, y: 24 }}
+    initial={{ opacity: 0, y: 32 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-60px' }}
-    transition={{ duration: 0.7, delay, ease: [0.25, 0.1, 0.25, 1] }}
+    viewport={{ once: true, margin: '-80px' }}
+    transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
     className={className}
   >
     {children}
   </motion.div>
 );
+
+/* ── Data ─────────────────────────────────────────── */
 
 const steps = [
   {
@@ -121,217 +125,199 @@ const steps = [
   },
 ];
 
-function MINDCircleDiagram() {
+/* ── Hero MIND Diagram ────────────────────────────── */
+
+function MINDHeroDiagram() {
   const [activeStep, setActiveStep] = useState(null);
-  const radius = 120;
-  const center = 160;
-  const positions = [
-    { angle: -90, label: 'M' },
-    { angle: 0, label: 'I' },
-    { angle: 90, label: 'N' },
-    { angle: 180, label: 'D' },
-  ];
 
   return (
-    <div className="flex justify-center">
-      <svg viewBox="0 0 320 320" className="w-64 h-64 md:w-80 md:h-80">
-        {/* Circular path */}
-        <motion.circle
-          cx={center}
-          cy={center}
-          r={radius}
-          fill="none"
-          stroke="rgba(45,225,194,0.15)"
-          strokeWidth="2"
-          strokeDasharray="4 6"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 2, ease: 'easeInOut' }}
-        />
-
-        {/* Arrow indicators on the circle */}
-        {positions.map((pos, i) => {
-          const midAngle = ((pos.angle + positions[(i + 1) % 4].angle) / 2 + (i === 3 ? 360 : 0)) * (Math.PI / 180);
-          const arrowAngle = i === 3
-            ? (((180 + -90 + 360) / 2) * Math.PI) / 180
-            : midAngle;
-          const ax = center + (radius + 2) * Math.cos(arrowAngle);
-          const ay = center + (radius + 2) * Math.sin(arrowAngle);
-          return (
-            <circle
-              key={`arrow-${i}`}
-              cx={ax}
-              cy={ay}
-              r="3"
-              fill="rgba(45,225,194,0.4)"
+    <div className="flex items-center justify-center gap-3 md:gap-6">
+      {steps.map((step, i) => {
+        const isActive = activeStep === i;
+        return (
+          <motion.div
+            key={step.letter}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 + i * 0.15, type: 'spring', stiffness: 150, damping: 15 }}
+            className="relative cursor-pointer group"
+            onMouseEnter={() => setActiveStep(i)}
+            onMouseLeave={() => setActiveStep(null)}
+          >
+            {/* Glow ring */}
+            <div
+              className={`absolute inset-0 rounded-3xl transition-all duration-500 ${
+                isActive ? 'bg-teal-500/10 shadow-[0_0_60px_rgba(45,225,194,0.2)]' : ''
+              }`}
             />
-          );
-        })}
-
-        {/* Step nodes */}
-        {positions.map((pos, i) => {
-          const rad = (pos.angle * Math.PI) / 180;
-          const x = center + radius * Math.cos(rad);
-          const y = center + radius * Math.sin(rad);
-          const step = steps[i];
-          const isActive = activeStep === i;
-
-          return (
-            <g
-              key={pos.label}
-              className="cursor-pointer"
-              onMouseEnter={() => setActiveStep(i)}
-              onMouseLeave={() => setActiveStep(null)}
+            <div
+              className={`relative w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-3xl border-2 flex flex-col items-center justify-center transition-all duration-500 ${
+                isActive
+                  ? 'border-teal-400 bg-teal-500/10'
+                  : 'border-white/10 bg-white/[0.03] hover:border-white/20'
+              }`}
             >
-              <motion.circle
-                cx={x}
-                cy={y}
-                r={isActive ? 36 : 32}
-                fill={isActive ? 'rgba(45,225,194,0.15)' : 'rgba(255,255,255,0.05)'}
-                stroke={isActive ? '#2DE1C2' : 'rgba(255,255,255,0.1)'}
-                strokeWidth={isActive ? 2 : 1}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3 + i * 0.15, type: 'spring', stiffness: 200 }}
-              />
-              <text
-                x={x}
-                y={y - 4}
-                textAnchor="middle"
-                className="text-2xl font-extrabold"
-                fill={isActive ? '#2DE1C2' : '#FFFFFF'}
+              <span
+                className={`text-4xl md:text-5xl lg:text-6xl font-extrabold leading-none transition-all duration-300 ${
+                  isActive
+                    ? 'text-teal-300 drop-shadow-[0_0_20px_rgba(45,225,194,0.5)]'
+                    : 'text-transparent bg-clip-text bg-gradient-to-b from-teal-300 to-teal-600'
+                }`}
               >
-                {pos.label}
-              </text>
-              <text
-                x={x}
-                y={y + 14}
-                textAnchor="middle"
-                className="text-[8px] font-medium"
-                fill={isActive ? '#2DE1C2' : '#94A3B8'}
+                {step.letter}
+              </span>
+              <span
+                className={`text-[10px] md:text-xs font-bold tracking-wider mt-1 transition-colors duration-300 ${
+                  isActive ? 'text-teal-300' : 'text-slate-500'
+                }`}
+              >
+                {step.title}
+              </span>
+            </div>
+
+            {/* Tooltip */}
+            {isActive && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute top-full mt-4 left-1/2 -translate-x-1/2 whitespace-nowrap px-5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-sm text-white font-semibold shadow-2xl z-10"
               >
                 {step.titleVi}
-              </text>
-            </g>
-          );
-        })}
+              </motion.div>
+            )}
 
-        {/* Center text */}
-        <text x={center} y={center - 6} textAnchor="middle" className="text-xs font-bold" fill="#2DE1C2">
-          MIND
-        </text>
-        <text x={center} y={center + 10} textAnchor="middle" className="text-[7px]" fill="#64748B">
-          Framework
-        </text>
-      </svg>
+            {/* Arrow between letters */}
+            {i < 3 && (
+              <div className="absolute -right-2 md:-right-4 top-1/2 -translate-y-1/2 text-slate-700">
+                <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+              </div>
+            )}
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
 
+/* ── Step detail section ──────────────────────────── */
+
 function StepSection({ step, index }) {
   const Icon = step.icon;
-  const isEven = index % 2 === 0;
 
   return (
-    <section className="py-20 md:py-28 px-6 border-t border-white/5">
-      <div className="max-w-6xl mx-auto">
-        <div className={`grid md:grid-cols-12 gap-10 md:gap-16 items-start ${isEven ? '' : 'md:[direction:rtl]'}`}>
-          {/* Left: big letter + meta */}
-          <div className={`md:col-span-4 ${isEven ? '' : 'md:[direction:ltr]'}`}>
-            <FadeIn>
-              <div className="sticky top-28">
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, type: 'spring' }}
-                  className="mb-6"
-                >
-                  <span className="text-8xl md:text-9xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-teal-300 to-teal-700 leading-none">
-                    {step.letter}
-                  </span>
-                </motion.div>
-                <div className="space-y-1 mb-4">
-                  <h3 className="text-xs font-bold text-slate-500 tracking-widest">{step.title}</h3>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white">{step.titleVi}</h2>
+    <section className="py-28 md:py-36 px-6 border-t border-white/5 relative overflow-hidden">
+      {/* Subtle background glow per step */}
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-teal-900/[0.06] rounded-full blur-[200px] -z-10" />
+
+      <div className="max-w-7xl mx-auto">
+        {/* Top: massive letter + title row */}
+        <div className="flex flex-col md:flex-row items-start md:items-end gap-6 md:gap-10 mb-16">
+          {/* MASSIVE letter */}
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, type: 'spring', stiffness: 120 }}
+            className="relative"
+          >
+            <span className="text-[10rem] md:text-[14rem] lg:text-[16rem] font-extrabold leading-[0.8] text-transparent bg-clip-text bg-gradient-to-b from-teal-200 via-teal-400 to-teal-800 select-none drop-shadow-[0_0_60px_rgba(45,225,194,0.12)]">
+              {step.letter}
+            </span>
+          </motion.div>
+
+          {/* Title + badge */}
+          <div className="pb-4 md:pb-8">
+            <FadeIn delay={0.1}>
+              <h3 className="text-base md:text-lg font-bold text-slate-500 tracking-[0.25em] uppercase mb-2">
+                {step.title}
+              </h3>
+              <h2 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] mb-5">
+                {step.titleVi}
+              </h2>
+              <span
+                className={`inline-block text-sm font-bold px-5 py-2 rounded-full ${
+                  step.free
+                    ? 'bg-teal-500/15 text-teal-300 border border-teal-500/25'
+                    : 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/25'
+                }`}
+              >
+                {step.free ? 'MIỄN PHÍ' : 'CÓ PHÍ'}
+              </span>
+            </FadeIn>
+          </div>
+        </div>
+
+        {/* Definition */}
+        <FadeIn delay={0.15}>
+          <p className="text-xl md:text-2xl text-slate-300 leading-relaxed mb-16 max-w-4xl">
+            {step.definition}
+          </p>
+        </FadeIn>
+
+        {/* Three cards: activities, deliverable, commitments */}
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Activities */}
+          <FadeIn delay={0.2}>
+            <div className="p-8 md:p-10 rounded-2xl bg-white/[0.03] border border-white/[0.06] h-full">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-teal-400" />
                 </div>
-                <span
-                  className={`inline-block text-xs font-bold px-3 py-1.5 rounded-full ${
-                    step.free
-                      ? 'bg-teal-500/15 text-teal-400 border border-teal-500/20'
-                      : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/20'
-                  }`}
-                >
-                  {step.free ? 'MIỄN PHÍ' : 'CÓ PHÍ'}
-                </span>
+                <h4 className="text-lg font-bold text-teal-300">Mindtransform làm</h4>
               </div>
-            </FadeIn>
-          </div>
-
-          {/* Right: content */}
-          <div className={`md:col-span-8 ${isEven ? '' : 'md:[direction:ltr]'}`}>
-            <FadeIn delay={0.15}>
-              <p className="text-lg text-slate-300 leading-relaxed mb-10">{step.definition}</p>
-            </FadeIn>
-
-            {/* Three columns: activities, deliverable, commitments */}
-            <div className="grid sm:grid-cols-3 gap-6">
-              {/* Activities */}
-              <FadeIn delay={0.2}>
-                <div className="p-5 rounded-xl bg-white/[0.03] border border-white/5 h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Icon className="w-4 h-4 text-teal-400" />
-                    <h4 className="text-sm font-bold text-teal-400">Mindtransform làm</h4>
-                  </div>
-                  <ul className="space-y-3">
-                    {step.activities.map((act, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-400 leading-relaxed">
-                        <span className="w-1 h-1 rounded-full bg-teal-500/50 flex-shrink-0 mt-2" />
-                        {act}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </FadeIn>
-
-              {/* Deliverable */}
-              <FadeIn delay={0.3}>
-                <div className="p-5 rounded-xl bg-white/[0.03] border border-white/5 h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <FileText className="w-4 h-4 text-cyan-400" />
-                    <h4 className="text-sm font-bold text-cyan-400">Bạn nhận được</h4>
-                  </div>
-                  <div className="p-4 rounded-lg bg-white/[0.03] border border-white/5">
-                    <p className="text-white font-semibold text-sm mb-1">{step.deliverable}</p>
-                    <p className="text-xs text-slate-500">{step.deliverableDesc}</p>
-                  </div>
-                </div>
-              </FadeIn>
-
-              {/* Commitments */}
-              <FadeIn delay={0.4}>
-                <div className="p-5 rounded-xl bg-white/[0.03] border border-white/5 h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Users className="w-4 h-4 text-amber-400" />
-                    <h4 className="text-sm font-bold text-amber-400">Bạn cần cam kết</h4>
-                  </div>
-                  <ul className="space-y-3">
-                    {step.commitments.map((c, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-400 leading-relaxed">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-500/50 flex-shrink-0 mt-0.5" />
-                        {c}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </FadeIn>
+              <ul className="space-y-4">
+                {step.activities.map((act, i) => (
+                  <li key={i} className="flex items-start gap-3 text-base text-slate-400 leading-relaxed">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400/50 flex-shrink-0 mt-2.5" />
+                    {act}
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
+          </FadeIn>
+
+          {/* Deliverable */}
+          <FadeIn delay={0.3}>
+            <div className="p-8 md:p-10 rounded-2xl bg-white/[0.03] border border-white/[0.06] h-full">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-cyan-400" />
+                </div>
+                <h4 className="text-lg font-bold text-cyan-300">Bạn nhận được</h4>
+              </div>
+              <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                <p className="text-white font-bold text-lg mb-2">{step.deliverable}</p>
+                <p className="text-base text-slate-500">{step.deliverableDesc}</p>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Commitments */}
+          <FadeIn delay={0.4}>
+            <div className="p-8 md:p-10 rounded-2xl bg-white/[0.03] border border-white/[0.06] h-full">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-amber-400" />
+                </div>
+                <h4 className="text-lg font-bold text-amber-300">Bạn cần cam kết</h4>
+              </div>
+              <ul className="space-y-4">
+                {step.commitments.map((c, i) => (
+                  <li key={i} className="flex items-start gap-3 text-base text-slate-400 leading-relaxed">
+                    <CheckCircle2 className="w-5 h-5 text-amber-500/50 flex-shrink-0 mt-0.5" />
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </FadeIn>
         </div>
       </div>
     </section>
   );
 }
+
+/* ── Page ─────────────────────────────────────────── */
 
 export default function MINDFramework() {
   const { openForm } = useModal();
@@ -346,49 +332,47 @@ export default function MINDFramework() {
         />
       </Helmet>
 
-      {/* ===== HERO ===== */}
-      <section className="py-24 md:py-32 px-6 relative overflow-hidden">
+      {/* ═══════════════════ HERO ═══════════════════ */}
+      <section className="py-28 md:py-40 px-6 relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-900/15 rounded-full blur-[150px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-teal-900/15 rounded-full blur-[200px]" />
         </div>
 
-        <div className="max-w-5xl mx-auto text-center">
+        <div className="max-w-6xl mx-auto text-center">
           <FadeIn>
-            <span className="text-teal-500 text-sm font-bold tracking-widest uppercase">
+            <span className="text-teal-400 text-sm md:text-base font-bold tracking-[0.25em] uppercase">
               Methodology
             </span>
-            <h1 className="mt-4 text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-200 to-white">
+            <h1 className="mt-6 text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-extrabold tracking-tight leading-[0.95] mb-8">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-200 via-white to-teal-100">
                 Phương pháp MIND
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-12">
+            <p className="text-xl md:text-2xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-16">
               4 bước chuyển đổi có đo lường — từ hiểu rõ đến tăng trưởng
             </p>
           </FadeIn>
 
-          <FadeIn delay={0.3}>
-            <MINDCircleDiagram />
-          </FadeIn>
+          <MINDHeroDiagram />
         </div>
       </section>
 
-      {/* ===== PHILOSOPHY ===== */}
-      <section className="py-20 md:py-28 px-6 border-t border-white/5">
-        <div className="max-w-4xl mx-auto">
+      {/* ═══════════════════ PHILOSOPHY ═══════════════════ */}
+      <section className="py-28 md:py-36 px-6 border-t border-white/5">
+        <div className="max-w-5xl mx-auto">
           <FadeIn>
             <div className="relative">
-              <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-500 to-transparent rounded-full" />
-              <div className="space-y-8 pl-8">
-                <blockquote className="text-xl md:text-2xl text-slate-200 leading-relaxed font-light">
+              <div className="absolute -left-6 top-0 bottom-0 w-1.5 bg-gradient-to-b from-teal-400 to-transparent rounded-full" />
+              <div className="space-y-10 pl-12">
+                <blockquote className="text-2xl md:text-4xl text-slate-100 leading-[1.4] font-light">
                   Phần lớn doanh nghiệp nhỏ thất bại ở chuyển đổi số không phải vì thiếu công cụ — mà vì
                   chưa thay đổi cách nghĩ về vận hành.
                 </blockquote>
-                <p className="text-lg text-slate-400 leading-relaxed">
+                <p className="text-xl md:text-2xl text-slate-400 leading-relaxed">
                   MIND đặt tư duy trước công nghệ. Hiểu trước khi làm. Đo trước khi mở rộng. Chứng minh
                   trước khi cam kết.
                 </p>
-                <p className="text-lg text-slate-400 leading-relaxed">
+                <p className="text-xl md:text-2xl text-slate-400 leading-relaxed">
                   Mindtransform không gắn vào bất kỳ nền tảng hay công nghệ nào. Lark, KiotViet, Excel, quy
                   trình giấy — cái gì phù hợp thì dùng. MIND là phương pháp, không phải sản phẩm.
                 </p>
@@ -398,67 +382,67 @@ export default function MINDFramework() {
         </div>
       </section>
 
-      {/* ===== STEP DETAILS ===== */}
+      {/* ═══════════════════ STEP DETAILS ═══════════════════ */}
       {steps.map((step, i) => (
         <StepSection key={step.letter} step={step} index={i} />
       ))}
 
-      {/* ===== PRICING MODEL ===== */}
-      <section className="py-24 md:py-32 px-6 border-t border-white/5 relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-teal-900/10 rounded-full blur-[120px] -z-10" />
+      {/* ═══════════════════ PRICING MODEL ═══════════════════ */}
+      <section className="py-28 md:py-40 px-6 border-t border-white/5 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-teal-900/10 rounded-full blur-[180px] -z-10" />
 
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <FadeIn>
-            <div className="text-center mb-16">
-              <span className="text-teal-500 text-sm font-bold tracking-widest uppercase">
+            <div className="text-center mb-20">
+              <span className="text-teal-400 text-sm md:text-base font-bold tracking-[0.2em] uppercase">
                 Mô hình tính phí
               </span>
-              <h2 className="mt-4 text-3xl md:text-5xl font-bold">
-                Cam kết vào kết quả,{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-200">
+              <h2 className="mt-6 text-4xl md:text-6xl lg:text-7xl font-extrabold leading-[1.05]">
+                Cam kết vào kết quả,
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-teal-100">
                   không phải lời hứa
                 </span>
               </h2>
             </div>
           </FadeIn>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-10">
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
             {[
               {
                 label: 'Build fee',
                 pct: '35%',
                 when: 'Khi bàn giao Nurture-Build',
                 commit: 'Đúng SOW, đúng spec, đúng function',
-                pctClass: 'text-teal-400',
+                pctClass: 'text-teal-300',
+                glowClass: 'group-hover:shadow-[0_0_40px_rgba(45,225,194,0.1)]',
               },
               {
                 label: 'Outcome milestone 1',
                 pct: '35%',
                 when: 'Sau 1 tháng adoption ổn định',
                 commit: 'Hệ thống vận hành ổn định',
-                pctClass: 'text-cyan-400',
+                pctClass: 'text-cyan-300',
+                glowClass: 'group-hover:shadow-[0_0_40px_rgba(34,211,238,0.1)]',
               },
               {
                 label: 'Outcome milestone 2',
                 pct: '30%',
                 when: 'Sau đo kết quả (≈3 tháng)',
                 commit: 'Metrics đạt ngưỡng cam kết',
-                pctClass: 'text-emerald-400',
+                pctClass: 'text-emerald-300',
+                glowClass: 'group-hover:shadow-[0_0_40px_rgba(52,211,153,0.1)]',
               },
             ].map((item, i) => (
               <FadeIn key={item.label} delay={i * 0.15}>
-                <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5 h-full">
-                  <div className="flex items-baseline gap-2 mb-4">
-                    <span
-                      className={`text-3xl font-extrabold ${item.pctClass}`}
-                    >
-                      {item.pct}
-                    </span>
-                  </div>
-                  <h3 className="text-white font-semibold mb-2">{item.label}</h3>
-                  <p className="text-sm text-slate-400 mb-3">{item.when}</p>
-                  <div className="pt-3 border-t border-white/5">
-                    <p className="text-xs text-slate-500">Cam kết: {item.commit}</p>
+                <div className={`group p-10 rounded-2xl bg-white/[0.03] border border-white/[0.06] h-full transition-all duration-500 hover:bg-white/[0.05] ${item.glowClass}`}>
+                  <span className={`text-5xl md:text-6xl font-extrabold ${item.pctClass} block mb-4`}>
+                    {item.pct}
+                  </span>
+                  <h3 className="text-xl text-white font-bold mb-3">{item.label}</h3>
+                  <p className="text-base text-slate-400 mb-5">{item.when}</p>
+                  <div className="pt-5 border-t border-white/5">
+                    <p className="text-sm text-slate-500">Cam kết: {item.commit}</p>
                   </div>
                 </div>
               </FadeIn>
@@ -466,10 +450,10 @@ export default function MINDFramework() {
           </div>
 
           <FadeIn delay={0.5}>
-            <div className="text-center p-6 rounded-xl bg-teal-500/5 border border-teal-500/10">
-              <p className="text-slate-300">
+            <div className="text-center p-8 rounded-2xl bg-teal-500/5 border border-teal-500/10">
+              <p className="text-lg text-slate-300 leading-relaxed">
                 Map + Isolate + toàn bộ plan:{' '}
-                <span className="text-teal-400 font-semibold">hoàn toàn miễn phí</span>. Bạn chỉ trả khi
+                <span className="text-teal-300 font-bold">hoàn toàn miễn phí</span>. Bạn chỉ trả khi
                 chọn để Mindtransform thực thi — và chúng tôi commit vào kết quả.
               </p>
             </div>
@@ -477,69 +461,59 @@ export default function MINDFramework() {
         </div>
       </section>
 
-      {/* ===== POST-PROJECT ===== */}
-      <section className="py-24 md:py-32 px-6 border-t border-white/5">
-        <div className="max-w-5xl mx-auto">
+      {/* ═══════════════════ POST-PROJECT ═══════════════════ */}
+      <section className="py-28 md:py-40 px-6 border-t border-white/5">
+        <div className="max-w-6xl mx-auto">
           <FadeIn>
-            <div className="text-center mb-16">
-              <span className="text-teal-500 text-sm font-bold tracking-widest uppercase">
+            <div className="text-center mb-20">
+              <span className="text-teal-400 text-sm md:text-base font-bold tracking-[0.2em] uppercase">
                 Sau dự án
               </span>
-              <h2 className="mt-4 text-3xl md:text-5xl font-bold">Tiếp tục hành trình</h2>
+              <h2 className="mt-6 text-4xl md:text-6xl lg:text-7xl font-extrabold">Tiếp tục hành trình</h2>
             </div>
           </FadeIn>
 
-          <div className="grid md:grid-cols-2 gap-8 mb-10">
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
             <FadeIn delay={0.1}>
-              <div className="group p-8 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-teal-500/20 transition-all h-full">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
-                    <Headphones className="w-5 h-5 text-teal-400" />
+              <div className="group p-10 md:p-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-teal-500/25 transition-all duration-500 h-full">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center">
+                    <Headphones className="w-7 h-7 text-teal-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">Gói Retainer</h3>
-                    <span className="text-xs text-teal-400 font-medium">Khuyến nghị</span>
+                    <h3 className="text-2xl font-bold text-white">Gói Retainer</h3>
+                    <span className="text-sm text-teal-400 font-bold">Khuyến nghị</span>
                   </div>
                 </div>
-                <p className="text-slate-400 leading-relaxed mb-4">
-                  Mindtransform tiếp tục đồng hành. Health check, fix issues, cải tiến, onboard nhân viên
-                  mới.
+                <p className="text-lg text-slate-400 leading-relaxed mb-5">
+                  Mindtransform tiếp tục đồng hành. Health check, fix issues, cải tiến, onboard nhân viên mới.
                 </p>
-                <p className="text-sm text-slate-500">
-                  Phù hợp: DN không có team tech nội bộ.
-                </p>
+                <p className="text-base text-slate-500">Phù hợp: DN không có team tech nội bộ.</p>
               </div>
             </FadeIn>
 
             <FadeIn delay={0.2}>
-              <div className="group p-8 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-indigo-500/20 transition-all h-full">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                    <GraduationCap className="w-5 h-5 text-indigo-400" />
+              <div className="group p-10 md:p-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-indigo-500/25 transition-all duration-500 h-full">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
+                    <GraduationCap className="w-7 h-7 text-indigo-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">Gói Training & Handover</h3>
+                    <h3 className="text-2xl font-bold text-white">Gói Training & Handover</h3>
                   </div>
                 </div>
-                <p className="text-slate-400 leading-relaxed mb-4">
+                <p className="text-lg text-slate-400 leading-relaxed mb-5">
                   Mindtransform chuyển giao toàn bộ cho team bạn. Đào tạo chuyên sâu, tài liệu, handover.
                 </p>
-                <p className="text-sm text-slate-500">
-                  Phù hợp: DN có team tech/BA sẵn.
-                </p>
+                <p className="text-base text-slate-500">Phù hợp: DN có team tech/BA sẵn.</p>
               </div>
             </FadeIn>
           </div>
 
           <FadeIn delay={0.3}>
-            <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-teal-500">
-                <path
-                  d="M10 2a8 8 0 1 1-6.93 4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
+            <div className="flex items-center justify-center gap-3 text-base md:text-lg text-slate-500">
+              <svg width="24" height="24" viewBox="0 0 20 20" fill="none" className="text-teal-400">
+                <path d="M10 2a8 8 0 1 1-6.93 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 <path d="M3.07 6L1 3.5M3.07 6L5.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               Cả 2 gói đều dẫn đến MIND vòng tiếp theo — module mới, tăng trưởng tiếp tục
@@ -548,32 +522,32 @@ export default function MINDFramework() {
         </div>
       </section>
 
-      {/* ===== FINAL CTA ===== */}
-      <section className="py-24 md:py-32 px-6 border-t border-white/5 relative overflow-hidden">
+      {/* ═══════════════════ FINAL CTA ═══════════════════ */}
+      <section className="py-28 md:py-40 px-6 border-t border-white/5 relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-teal-900/15 rounded-full blur-[150px]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-teal-900/15 rounded-full blur-[200px]" />
         </div>
 
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center">
           <FadeIn>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-8 leading-[1.05]">
               Bắt đầu từ Map —{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-200">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-teal-100">
                 hoàn toàn miễn phí
               </span>
             </h2>
-            <p className="text-lg text-slate-400 mb-10 max-w-xl mx-auto">
+            <p className="text-xl md:text-2xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
               Mindtransform Map toàn bộ bối cảnh vận hành của bạn — miễn phí, không ràng buộc. Bạn quyết
               định bước tiếp theo.
             </p>
             <button
               onClick={openForm}
-              className="group px-10 py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-full font-semibold text-lg hover:shadow-lg hover:shadow-teal-500/25 transition-all inline-flex items-center gap-2"
+              className="group px-12 py-5 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-full font-bold text-xl hover:shadow-xl hover:shadow-teal-500/30 transition-all inline-flex items-center gap-3"
             >
               Đăng ký nhận MIND Map Report
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform" />
             </button>
-            <p className="mt-6 text-sm text-slate-600">
+            <p className="mt-8 text-base text-slate-600">
               Không spam. Không bán data. Chỉ tư vấn khi bạn sẵn sàng.
             </p>
           </FadeIn>
