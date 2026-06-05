@@ -55,7 +55,7 @@ function MINDLetter({ letter, label, labelVi, free, delay = 0, index }) {
 
       {/* Giant letter */}
       <div className="relative mb-5">
-        <span className="text-[7rem] md:text-[9rem] lg:text-[10rem] font-extrabold leading-none text-transparent bg-clip-text bg-gradient-to-b from-teal-200 via-teal-400 to-teal-700 select-none drop-shadow-[0_0_40px_rgba(45,225,194,0.15)] group-hover:drop-shadow-[0_0_60px_rgba(45,225,194,0.3)] transition-all duration-500">
+        <span className="text-[5rem] sm:text-[7rem] md:text-[9rem] lg:text-[10rem] font-extrabold leading-none text-transparent bg-clip-text bg-gradient-to-b from-teal-200 via-teal-400 to-teal-700 select-none drop-shadow-[0_0_40px_rgba(45,225,194,0.15)] group-hover:drop-shadow-[0_0_60px_rgba(45,225,194,0.3)] transition-all duration-500">
           {letter}
         </span>
       </div>
@@ -219,7 +219,7 @@ export default function HomeV2() {
       </section>
 
       {/* ═══════════════════ PAIN POINTS ═══════════════════ */}
-      <section className="py-28 md:py-40 px-6 border-t border-white/5">
+      <section className="py-28 md:py-40 px-6 border-t border-white/5 overflow-hidden">
         <div className="max-w-5xl mx-auto">
           <FadeIn>
             <div className="text-center mb-20">
@@ -324,7 +324,7 @@ export default function HomeV2() {
       </section>
 
       {/* ═══════════════════ COMMITMENT — SKIN IN THE GAME ═══════════════════ */}
-      <section className="py-28 md:py-40 px-6 border-t border-white/5">
+      <section className="py-28 md:py-40 px-6 border-t border-white/5 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-16 lg:gap-24 items-center">
             <SlideIn direction="left">
@@ -402,7 +402,7 @@ export default function HomeV2() {
       </section>
 
       {/* ═══════════════════ INDUSTRIES ═══════════════════ */}
-      <section className="py-28 md:py-40 px-6 border-t border-white/5">
+      <section className="py-28 md:py-40 px-6 border-t border-white/5 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <FadeIn>
             <div className="text-center mb-20">
@@ -443,7 +443,7 @@ export default function HomeV2() {
       </section>
 
       {/* ═══════════════════ CASE STUDY PLACEHOLDER ═══════════════════ */}
-      <section className="py-28 md:py-40 px-6 border-t border-white/5">
+      <section className="py-28 md:py-40 px-6 border-t border-white/5 overflow-hidden">
         <div className="max-w-5xl mx-auto">
           <FadeIn>
             <div className="text-center p-16 md:p-20 rounded-3xl bg-white/[0.02] border border-dashed border-white/10">

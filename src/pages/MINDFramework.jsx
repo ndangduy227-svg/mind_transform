@@ -205,7 +205,7 @@ function StepSection({ step, index }) {
   const Icon = step.icon;
 
   return (
-    <section className="py-28 md:py-36 px-6 border-t border-white/5 relative overflow-hidden">
+    <section className="py-20 md:py-36 px-6 border-t border-white/5 relative overflow-hidden">
       {/* Subtle background glow per step */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-teal-900/[0.06] rounded-full blur-[200px] -z-10" />
 
@@ -220,7 +220,7 @@ function StepSection({ step, index }) {
             transition={{ duration: 0.6, type: 'spring', stiffness: 120 }}
             className="relative"
           >
-            <span className="text-[10rem] md:text-[14rem] lg:text-[16rem] font-extrabold leading-[0.8] text-transparent bg-clip-text bg-gradient-to-b from-teal-200 via-teal-400 to-teal-800 select-none drop-shadow-[0_0_60px_rgba(45,225,194,0.12)]">
+            <span className="text-[7rem] sm:text-[10rem] md:text-[14rem] lg:text-[16rem] font-extrabold leading-[0.8] text-transparent bg-clip-text bg-gradient-to-b from-teal-200 via-teal-400 to-teal-800 select-none drop-shadow-[0_0_60px_rgba(45,225,194,0.12)]">
               {step.letter}
             </span>
           </motion.div>
@@ -358,7 +358,7 @@ export default function MINDFramework() {
       </section>
 
       {/* ═══════════════════ PHILOSOPHY ═══════════════════ */}
-      <section className="py-28 md:py-36 px-6 border-t border-white/5">
+      <section className="py-28 md:py-36 px-6 border-t border-white/5 overflow-hidden">
         <div className="max-w-5xl mx-auto">
           <FadeIn>
             <div className="relative">
@@ -462,7 +462,7 @@ export default function MINDFramework() {
       </section>
 
       {/* ═══════════════════ POST-PROJECT ═══════════════════ */}
-      <section className="py-28 md:py-40 px-6 border-t border-white/5">
+      <section className="py-28 md:py-40 px-6 border-t border-white/5 overflow-hidden">
         <div className="max-w-6xl mx-auto">
           <FadeIn>
             <div className="text-center mb-20">
