@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { STATIC_POSTS } from '../data/staticPosts';
 
 const cache = {
     posts: null,
@@ -8,6 +9,18 @@ const cache = {
 };
 
 const CACHE_TTL = 5 * 60 * 1000;
+
+function mergePosts(remotePosts = []) {
+    const postsBySlug = new Map();
+
+    [...STATIC_POSTS, ...remotePosts].forEach(post => {
+        if (!postsBySlug.has(post.slug)) postsBySlug.set(post.slug, post);
+    });
+
+    return [...postsBySlug.values()].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+}
 
 function isCacheValid(type) {
     return cache[type] !== null && (Date.now() - cache[`${type}Timestamp`]) < CACHE_TTL;
@@ -23,14 +36,21 @@ export const posts = {
             .eq('status', 'Published')
             .order('date', { ascending: false });
 
-        if (error) throw new Error(`CMS fetch failed: ${error.message}`);
+        if (error) {
+            cache.posts = mergePosts();
+            cache.postsTimestamp = Date.now();
+            return cache.posts;
+        }
 
-        cache.posts = data ?? [];
+        cache.posts = mergePosts(data ?? []);
         cache.postsTimestamp = Date.now();
         return cache.posts;
     },
 
     getBySlug: async (slug) => {
+        const staticPost = STATIC_POSTS.find(post => post.slug === slug);
+        if (staticPost) return staticPost;
+
         const { data, error } = await supabase
             .from('posts')
             .select('*')
