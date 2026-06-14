@@ -70,7 +70,7 @@ export default function BlogPost() {
         );
     }
 
-    const imageUrl = getGoogleDriveImageUrl(post.image);
+    const imageUrl = getGoogleDriveImageUrl(post.cover_image || post.image);
     const processedContent = processContent(post.content);
 
     return (
@@ -138,12 +138,22 @@ export default function BlogPost() {
                                 </div>
                             )}
 
-                            <div className="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-a:text-teal-400 hover:prose-a:text-teal-300 prose-strong:text-white prose-img:rounded-xl">
+                            <div className="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-a:text-teal-400 hover:prose-a:text-teal-300 prose-strong:text-white prose-img:rounded-xl prose-pre:max-w-full prose-pre:overflow-x-auto prose-code:whitespace-pre-wrap prose-code:break-words">
                                 {isHTMLContent(processedContent) ? (
                                     <div dangerouslySetInnerHTML={{ __html: addHeadingIds(processedContent) }} />
                                 ) : (
                                     <Markdown
                                         components={{
+                                            code: ({ node, ...props }) => (
+                                                <code
+                                                    {...props}
+                                                    style={{
+                                                        whiteSpace: 'pre-wrap',
+                                                        overflowWrap: 'anywhere',
+                                                        wordBreak: 'break-word',
+                                                    }}
+                                                />
+                                            ),
                                             img: ({ node, ...props }) => {
                                                 const realSrc = getGoogleDriveImageUrl(props.src);
                                                 return (
