@@ -70,35 +70,17 @@ export default function BlogPost() {
         );
     }
 
-    const imageUrl = getGoogleDriveImageUrl(post.image);
+    const imageUrl = getGoogleDriveImageUrl(post.cover_image || post.image);
     const processedContent = processContent(post.content);
 
     return (
         <>
             <Helmet>
                 <title>{post.title} | Mind.Transform Blog</title>
-                <meta name="description" content={post.summary || ''} />
-                <link rel="canonical" href={`https://mind-transform.vercel.app/blog/${post.slug}`} />
+                <meta name="description" content={post.summary} />
                 <meta property="og:title" content={post.title} />
-                <meta property="og:description" content={post.summary || ''} />
-                <meta property="og:url" content={`https://mind-transform.vercel.app/blog/${post.slug}`} />
-                <meta property="og:type" content="article" />
+                <meta property="og:description" content={post.summary} />
                 {imageUrl && <meta property="og:image" content={imageUrl} />}
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={post.title} />
-                <meta name="twitter:description" content={post.summary || ''} />
-                {imageUrl && <meta name="twitter:image" content={imageUrl} />}
-                <script type="application/ld+json">{JSON.stringify({
-                    "@context": "https://schema.org",
-                    "@type": "Article",
-                    "headline": post.title,
-                    "description": post.summary || '',
-                    "image": imageUrl || '',
-                    "author": { "@type": "Organization", "name": post.author || "Mind.Transform" },
-                    "publisher": { "@type": "Organization", "name": "Mind.Transform" },
-                    "datePublished": post.date,
-                    "mainEntityOfPage": `https://mind-transform.vercel.app/blog/${post.slug}`
-                })}</script>
             </Helmet>
 
             <article className="min-h-screen py-20 px-6">
@@ -138,12 +120,22 @@ export default function BlogPost() {
                                 </div>
                             )}
 
-                            <div className="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-a:text-teal-400 hover:prose-a:text-teal-300 prose-strong:text-white prose-img:rounded-xl">
+                            <div className="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-a:text-teal-400 hover:prose-a:text-teal-300 prose-strong:text-white prose-img:rounded-xl prose-pre:max-w-full prose-pre:overflow-x-auto prose-code:whitespace-pre-wrap prose-code:break-words">
                                 {isHTMLContent(processedContent) ? (
                                     <div dangerouslySetInnerHTML={{ __html: addHeadingIds(processedContent) }} />
                                 ) : (
                                     <Markdown
                                         components={{
+                                            code: ({ node, ...props }) => (
+                                                <code
+                                                    {...props}
+                                                    style={{
+                                                        whiteSpace: 'pre-wrap',
+                                                        overflowWrap: 'anywhere',
+                                                        wordBreak: 'break-word',
+                                                    }}
+                                                />
+                                            ),
                                             img: ({ node, ...props }) => {
                                                 const realSrc = getGoogleDriveImageUrl(props.src);
                                                 return (
