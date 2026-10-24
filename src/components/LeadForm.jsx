@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -6,6 +6,32 @@ import { supabase } from '../lib/supabase';
 export default function LeadForm({ isOpen, onClose }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [submitError, setSubmitError] = useState('');
+    const closeTimer = useRef(null);
+    const dialogRef = useRef(null);
+    useEffect(() => {
+        if (!isOpen) { setIsSuccess(false); return; }
+        setSubmitError('');
+        const previousFocus = document.activeElement;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        dialogRef.current?.querySelector('input')?.focus();
+        const onKeyDown = event => {
+            if (event.key === 'Escape') onClose();
+            if (event.key !== 'Tab') return;
+            const controls = Array.from(dialogRef.current?.querySelectorAll('button:not(:disabled), input, textarea') || []);
+            const first = controls[0], last = controls[controls.length - 1];
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            clearTimeout(closeTimer.current);
+            document.body.style.overflow = previousOverflow;
+            document.removeEventListener('keydown', onKeyDown);
+            previousFocus?.focus();
+        };
+    }, [isOpen, onClose]);
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -20,15 +46,17 @@ export default function LeadForm({ isOpen, onClose }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isSubmitting) return;
+        setSubmitError('');
         setIsSubmitting(true);
 
         try {
             const { error } = await supabase.from('leads').insert([{
-                name: formData.name,
-                phone: formData.phone,
-                email: formData.email,
-                company: formData.company,
-                need: formData.need,
+                name: formData.name.trim(),
+                phone: formData.phone.trim(),
+                email: formData.email.trim(),
+                company: formData.company.trim(),
+                need: formData.need.trim(),
             }]);
 
             if (error) throw error;
@@ -36,14 +64,13 @@ export default function LeadForm({ isOpen, onClose }) {
             setIsSuccess(true);
             setFormData({ name: '', phone: '', email: '', company: '', need: '' });
 
-            setTimeout(() => {
+            closeTimer.current = setTimeout(() => {
                 setIsSuccess(false);
                 onClose();
             }, 3000);
 
         } catch (error) {
-            console.error("Error submitting form", error);
-            alert("Có lỗi xảy ra. Vui lòng thử lại sau.");
+            setSubmitError('Chưa gửi được thông tin. Vui lòng thử lại; nội dung bạn nhập vẫn được giữ nguyên.');
         } finally {
             setIsSubmitting(false);
         }
@@ -69,7 +96,7 @@ export default function LeadForm({ isOpen, onClose }) {
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         className="fixed inset-0 flex items-center justify-center z-[70] p-4 pointer-events-none"
                     >
-                        <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl pointer-events-auto relative">
+                        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="lead-form-title" className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto shadow-2xl pointer-events-auto relative">
 
                             {/* Success Overlay */}
                             <AnimatePresence>
@@ -96,10 +123,11 @@ export default function LeadForm({ isOpen, onClose }) {
                             {/* Header */}
                             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-900/50">
                                 <div>
-                                    <h3 className="text-xl font-bold text-white">Kết nối với Mind.Transform</h3>
+                                    <h3 id="lead-form-title" className="text-xl font-bold text-white">Kết nối với Mind.Transform</h3>
                                     <p className="text-slate-400 text-sm mt-1">Để lại thông tin, chúng tôi sẽ liên hệ trong 24h.</p>
                                 </div>
                                 <button
+                                    aria-label="Đóng biểu mẫu liên hệ"
                                     onClick={onClose}
                                     className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-white"
                                 >
@@ -109,10 +137,11 @@ export default function LeadForm({ isOpen, onClose }) {
 
                             {/* Form */}
                             <form className="p-6 space-y-4" onSubmit={handleSubmit}>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-slate-300">Họ và tên</label>
+                                        <label htmlFor="lead-name" className="text-sm font-medium text-slate-300">Họ và tên</label>
                                         <input
+                                            id="lead-name" autoComplete="name" maxLength={150}
                                             required
                                             name="name"
                                             value={formData.name}
@@ -123,8 +152,9 @@ export default function LeadForm({ isOpen, onClose }) {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-slate-300">Số điện thoại</label>
+                                        <label htmlFor="lead-phone" className="text-sm font-medium text-slate-300">Số điện thoại</label>
                                         <input
+                                            id="lead-phone" autoComplete="tel" maxLength={30}
                                             required
                                             name="phone"
                                             value={formData.phone}
@@ -137,8 +167,9 @@ export default function LeadForm({ isOpen, onClose }) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-300">Email công việc</label>
+                                    <label htmlFor="lead-email" className="text-sm font-medium text-slate-300">Email công việc</label>
                                     <input
+                                        id="lead-email" autoComplete="email" maxLength={254}
                                         required
                                         name="email"
                                         value={formData.email}
@@ -150,8 +181,9 @@ export default function LeadForm({ isOpen, onClose }) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-300">Doanh nghiệp / Tổ chức</label>
+                                    <label htmlFor="lead-company" className="text-sm font-medium text-slate-300">Doanh nghiệp / Tổ chức</label>
                                     <input
+                                        id="lead-company" autoComplete="organization" maxLength={200}
                                         name="company"
                                         value={formData.company}
                                         onChange={handleChange}
@@ -162,8 +194,9 @@ export default function LeadForm({ isOpen, onClose }) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-300">Nhu cầu tư vấn</label>
+                                    <label htmlFor="lead-need" className="text-sm font-medium text-slate-300">Nhu cầu tư vấn</label>
                                     <textarea
+                                        id="lead-need" maxLength={4000}
                                         name="need"
                                         value={formData.need}
                                         onChange={handleChange}
@@ -173,6 +206,8 @@ export default function LeadForm({ isOpen, onClose }) {
                                     />
                                 </div>
 
+                                <p className="text-xs text-slate-400">Khi gửi, bạn đồng ý để Mindtransform dùng thông tin này để liên hệ về nhu cầu tư vấn của bạn.</p>
+                                {submitError && <p role="alert" className="text-sm text-amber-300">{submitError}</p>}
                                 <div className="pt-4">
                                     <button
                                         type="submit"

@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { ModalProvider, useModal } from './context/ModalContext';
 import Layout from './components/Layout';
 import Home from './pages/Home';
-import Products from './pages/Products';
-import Blog from './pages/Blog';
-import BlogPost from './pages/BlogPost';
-import MindAI from './pages/MindAI';
-import HomeV2 from './pages/HomeV2';
-import MINDFramework from './pages/MINDFramework';
-import TemplateLibrary from './pages/TemplateLibrary';
-import TemplateDetail from './pages/TemplateDetail';
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import PostEditor from './pages/admin/PostEditor';
-import TemplateEditor from './pages/admin/TemplateEditor';
-import BulkImport from './pages/admin/BulkImport';
-import SkillsList from './pages/admin/SkillsList';
-import SkillEditor from './pages/admin/SkillEditor';
+import NotFound from './pages/NotFound';
+const Products = lazy(() => import('./pages/Products'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
+const MindAI = lazy(() => import('./pages/MindAI'));
+const HomeV2 = lazy(() => import('./pages/HomeV2'));
+const MINDFramework = lazy(() => import('./pages/MINDFramework'));
+const TemplateLibrary = lazy(() => import('./pages/TemplateLibrary'));
+const TemplateDetail = lazy(() => import('./pages/TemplateDetail'));
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const PostEditor = lazy(() => import('./pages/admin/PostEditor'));
+const TemplateEditor = lazy(() => import('./pages/admin/TemplateEditor'));
+const BulkImport = lazy(() => import('./pages/admin/BulkImport'));
+const SkillsList = lazy(() => import('./pages/admin/SkillsList'));
+const SkillEditor = lazy(() => import('./pages/admin/SkillEditor'));
 import LeadForm from './components/LeadForm';
 import { isAuthenticated } from './services/cmsAdminService';
 import { Loader2 } from 'lucide-react';
@@ -29,7 +30,7 @@ function ProtectedRoute({ children }) {
     useEffect(() => {
         isAuthenticated().then(authed => {
             setAuthState(authed ? 'authed' : 'denied');
-        });
+        }).catch(() => setAuthState('denied'));
     }, []);
 
     if (authState === 'loading') {
@@ -107,6 +108,7 @@ function AppContent() {
                             <Route path="/mind-ai" element={<MindAI />} />
                             <Route path="/v2" element={<HomeV2 />} />
                             <Route path="/mind-framework" element={<MINDFramework />} />
+                            <Route path="*" element={<NotFound />} />
                         </Routes>
                     </Layout>
                 } />
@@ -122,7 +124,9 @@ export default function App() {
             <ModalProvider>
                 <Router>
                     <ScrollToTop />
-                    <AppContent />
+                    <Suspense fallback={<div role="status" className="min-h-screen bg-slate-950 text-slate-300 grid place-items-center">Đang tải trang...</div>}>
+                        <AppContent />
+                    </Suspense>
                 </Router>
             </ModalProvider>
         </HelmetProvider>

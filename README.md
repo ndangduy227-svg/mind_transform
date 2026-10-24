@@ -6,17 +6,29 @@
 
 ---
 
+## Verification — 2026-10-22
+
+Founder approved publishing all website fixes on 2026-10-24. `npm test` passes 20 tests and the production build passes in a clean local source mirror. The production release is tracked by the Vercel check on this repository's `main` branch. Browser visual and real lead-delivery verification are not claimed.
+
+MindAI stores successful user/assistant turns, permits five exchanges and saves submitted contact/intake/transcript to the existing `leads` schema. Per-turn durable sessions and automatic proposal/email delivery are not implemented. See `docs/Website_V1_Audit.md` for scope and limits.
+
+Use `.env.example` for configuration. Groq and Supabase service-role keys must remain server-side and must never use a `VITE_` prefix. Vite now serves `/api/chat` during local development. `npm run preview` serves static production assets only; deployed API checks require the configured serverless environment.
+
+Install dependencies in a clean local development checkout rather than reusing the damaged Google Drive `node_modules`.
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
 | Frontend | React 18 + Vite 5 + Tailwind CSS |
-| Routing | React Router v6 |
+| Routing | React Router v7 |
 | Animation | Framer Motion |
 | Database | Supabase (PostgreSQL + Row Level Security) |
 | Auth | Supabase Auth (email/password) |
 | AI Engine | Groq API — Llama 3.3 70B Versatile |
-| CMS Editor | TinyMCE 7 (self-hosted, GPL license) |
+| CMS Editor | TinyMCE 8 (self-hosted, GPL license) |
 | Image Storage | Supabase Storage (public bucket, 5MB limit) |
 | Hosting | Vercel (SPA + Serverless Functions) |
 | SEO | react-helmet-async, robots.txt, sitemap.xml, JSON-LD |
@@ -165,7 +177,8 @@ Mỗi trang public đều có đầy đủ:
 | `templates` | `id` (bigserial) | Lark templates — name, slug, description, use_case, category |
 | `skills` | `id` (bigserial) | AI skills — name, slug, type (master/sub), content, tags, priority |
 | `rate_limits` | `ip` (text) | Rate limiting — daily_count, session_count, last_reset |
-| `research` | `id` (bigserial) | Chat conversations khi user kết thúc phiên tư vấn |
+| `leads` | `id` (bigserial) | Contact form và yêu cầu MindAI; intake/transcript được lưu trong `need` |
+| `research` | Legacy | Không còn nhận yêu cầu mới từ MindAI |
 
 ### Supabase Storage
 
@@ -272,7 +285,7 @@ Client Request
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 24 (verified for build and automated tests)
 - Supabase project ([supabase.com](https://supabase.com))
 - Groq API key ([console.groq.com](https://console.groq.com))
 
@@ -281,7 +294,7 @@ Client Request
 ```bash
 git clone https://github.com/ndangduy227-svg/mind_transform.git
 cd mind_transform
-npm install
+npm ci
 ```
 
 ### 2. Environment Variables
@@ -291,7 +304,9 @@ npm install
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_GROQ_API_KEY=your-groq-api-key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-server-only-service-role-key
+GROQ_API_KEY=your-server-only-groq-key
 ```
 
 **Vercel** — thêm env vars (Settings > Environment Variables):
@@ -300,7 +315,6 @@ VITE_GROQ_API_KEY=your-groq-api-key
 |---|---|---|
 | `VITE_SUPABASE_URL` | Client | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Client | Supabase anon/public key |
-| `VITE_GROQ_API_KEY` | Client | Groq API key (cho legacy) |
 | `SUPABASE_URL` | Server | Supabase project URL (serverless functions) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server | Supabase service role key (RLS bypass) |
 | `GROQ_API_KEY` | Server | Groq API key (cho serverless functions) |
@@ -316,6 +330,7 @@ Chạy `SUPABASE_MIGRATION.sql` trong **Supabase Dashboard > SQL Editor**:
 ### 4. Run
 
 ```bash
+npm test           # 14 API/data tests + 6 offline component tests
 npm run dev        # Development server (http://localhost:5173)
 npm run build      # Production build
 npm run preview    # Preview production build

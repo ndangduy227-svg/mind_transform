@@ -12,7 +12,7 @@ export default function Footer() {
                     <Link to="/products" className="hover:text-teal-400 transition-colors">Sản phẩm</Link>
                     <Link to="/blog" className="hover:text-teal-400 transition-colors">Blog</Link>
                 </div>
-                <div>© 2025 Mind.Transform. All rights reserved.</div>
+                <div>© {new Date().getFullYear()} Mind.Transform. All rights reserved.</div>
             </div>
         </footer>
     );

@@ -23,7 +23,7 @@ export default function Navbar() {
     return (
         <nav className="fixed w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-white/5">
             <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                <Link to="/" className="text-white hover:opacity-80 transition-opacity z-50">
+                <Link to="/" aria-label="Mindtransform - Trang chủ" className="text-white hover:opacity-80 transition-opacity z-50">
                     <div dangerouslySetInnerHTML={{ __html: LOGOS.horizontal }} />
                 </Link>
 
@@ -55,6 +55,9 @@ export default function Navbar() {
 
                     {/* Mobile Menu Button */}
                     <button
+                        aria-label={isMobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
+                        aria-expanded={isMobileMenuOpen}
+                        aria-controls="mobile-menu"
                         className="md:hidden text-white p-2"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     >
@@ -67,6 +70,7 @@ export default function Navbar() {
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div
+                        id="mobile-menu"
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}

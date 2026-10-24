@@ -17,9 +17,14 @@ export default function BlogPost() {
     const [headings, setHeadings] = useState([]);
 
     useEffect(() => {
+        let active = true;
         setLoading(true);
+        setError(null);
+        setPost(null);
+        setHeadings([]);
         postsService.getBySlug(slug)
             .then(foundPost => {
+                if (!active) return;
                 if (foundPost) {
                     setPost(foundPost);
 
@@ -32,10 +37,12 @@ export default function BlogPost() {
                 setLoading(false);
             })
             .catch(err => {
+                if (!active) return;
                 console.error("Error fetching post:", err);
                 setError("Không thể tải bài viết.");
                 setLoading(false);
             });
+        return () => { active = false; };
     }, [slug]);
 
     // Custom Image Syntax Parser: [Image: Link; Caption]

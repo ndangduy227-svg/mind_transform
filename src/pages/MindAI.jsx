@@ -7,6 +7,7 @@ import UnderstandingScore from '../components/MindAI/UnderstandingScore';
 import TagSelector from '../components/admin/TagSelector';
 import { INDUSTRIES, DEPARTMENTS, COMPANY_SIZES, MAX_CHAT_MESSAGES, ZALO_CONTACT } from '../constants/mindai';
 import { supabase } from '../lib/supabase';
+import { createChatRequest, createConsultationLead, normalizeAIResponse } from '../utils/consultation';
 
 export default function MindAI() {
     const [step, setStep] = useState('intake'); // intake, chatting, submitting, success
@@ -15,7 +16,12 @@ export default function MindAI() {
     const [loading, setLoading] = useState(false);
     const [aiData, setAiData] = useState({ analysis: '', score: 0, next_question: '', suggested_links: [] });
     const [email, setEmail] = useState('');
-    const [messageCount, setMessageCount] = useState(0);
+    const [contactName, setContactName] = useState('');
+    const [contactPhone, setContactPhone] = useState('');
+    const [chatError, setChatError] = useState('');
+    const [submitError, setSubmitError] = useState('');
+    const [pendingMessage, setPendingMessage] = useState('');
+    const messageCount = history.length;
     const [showLimitModal, setShowLimitModal] = useState(false);
     const chatEndRef = useRef(null);
 
@@ -37,11 +43,10 @@ export default function MindAI() {
 
     const handleIntakeSubmit = async (e) => {
         e.preventDefault();
-        if (!currentInput.trim()) return;
+        if (!currentInput.trim() || loading) return;
 
         const firstMessage = currentInput;
         const newCount = 1;
-        setMessageCount(newCount);
         setStep('chatting');
         setLoading(true);
         setCurrentInput('');
@@ -59,34 +64,31 @@ export default function MindAI() {
         }
 
         const input = currentInput;
-        const newHistory = [...history, { user: input, ai: aiData.next_question }];
+        const newHistory = history;
         const newCount = messageCount + 1;
-        setHistory(newHistory);
         setCurrentInput('');
-        setMessageCount(newCount);
         setLoading(true);
 
         await processAI(input, newHistory, newCount);
     };
 
     const processAI = async (input, currentHistory, count) => {
+        setChatError('');
+        setPendingMessage(input);
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: input,
-                    history: currentHistory,
-                    intakeForm,
-                    messageCount: count,
-                }),
+                body: JSON.stringify(createChatRequest(input, currentHistory, intakeForm)),
+                signal: AbortSignal.timeout(30000),
             });
 
             const result = await response.json();
 
             if (result.error === 'rate_limited') {
                 setShowLimitModal(true);
-                setLoading(false);
+                setChatError(result.message || 'Bạn đã hết lượt tư vấn.');
+                setCurrentInput(input);
                 return;
             }
 
@@ -94,41 +96,37 @@ export default function MindAI() {
                 throw new Error(result.error || 'Server error');
             }
 
-            setAiData({
-                analysis: result.analysis || '',
-                score: result.score || 0,
-                next_question: result.next_question || '',
-                suggested_links: result.suggested_links || [],
-            });
-            setLoading(false);
+            const answer = normalizeAIResponse(result);
+            if (!answer.analysis && !answer.next_question) throw new Error('Chưa nhận được câu trả lời. Vui lòng thử lại.');
+            setAiData(answer);
+            setHistory([...currentHistory, { user: input, ai: [answer.analysis, answer.next_question].filter(Boolean).join('\n\n') }]);
 
             if (count >= MAX_CHAT_MESSAGES) {
                 setShowLimitModal(true);
             }
         } catch (err) {
-            console.error('AI Error:', err);
-            alert('Lỗi kết nối AI: ' + err.message);
+            setChatError(err.name === 'TimeoutError' ? 'Phản hồi mất quá lâu. Bạn có thể gửi lại nội dung bên dưới.' : 'Chưa kết nối được với Mind AI. Vui lòng thử lại hoặc liên hệ qua Zalo.');
+            setCurrentInput(input);
+        } finally {
             setLoading(false);
+            setPendingMessage('');
         }
     };
 
     const handleFinish = async (e) => {
         e.preventDefault();
-        if (!email) return;
+        if (loading || step === 'submitting' || !history.length) return;
 
-        setStep('submitting');
+        setSubmitError('');
         try {
-            const { error } = await supabase.from('research').insert([
-                {
-                    email,
-                    conversation: [...history, { user: 'FINISHED', ai: 'FINISHED' }],
-                },
-            ]);
+            const lead = createConsultationLead({ name: contactName, email, phone: contactPhone, intakeForm, history });
+            setStep('submitting');
+            const { error } = await supabase.from('leads').insert([lead]);
             if (error) throw error;
             setStep('success');
         } catch (err) {
             setStep('chatting');
-            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+            setSubmitError('Chưa lưu được yêu cầu. Thông tin của bạn vẫn còn, vui lòng thử lại hoặc liên hệ qua Zalo.');
         }
     };
 
@@ -191,10 +189,11 @@ export default function MindAI() {
 
                                                 {/* Industry */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-slate-400 mb-2">
+                                                    <label htmlFor="mindai-industry" className="block text-xs font-medium text-slate-400 mb-2">
                                                         Ngành nghề <span className="text-red-400">*</span>
                                                     </label>
                                                     <select
+                                                        id="mindai-industry" required
                                                         value={intakeForm.industry}
                                                         onChange={(e) => setIntakeForm({ ...intakeForm, industry: e.target.value })}
                                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-teal-500/50 transition-all appearance-none cursor-pointer"
@@ -212,10 +211,11 @@ export default function MindAI() {
 
                                                 {/* Company size */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-slate-400 mb-2">
+                                                    <label htmlFor="mindai-size" className="block text-xs font-medium text-slate-400 mb-2">
                                                         Quy mô <span className="text-red-400">*</span>
                                                     </label>
                                                     <select
+                                                        id="mindai-size" required
                                                         value={intakeForm.companySize}
                                                         onChange={(e) => setIntakeForm({ ...intakeForm, companySize: e.target.value })}
                                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-teal-500/50 transition-all appearance-none cursor-pointer"
@@ -242,10 +242,11 @@ export default function MindAI() {
 
                                                 {/* Website */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-slate-400 mb-2">
+                                                    <label htmlFor="mindai-website" className="block text-xs font-medium text-slate-400 mb-2">
                                                         Website (tuỳ chọn)
                                                     </label>
                                                     <input
+                                                        id="mindai-website" maxLength={500}
                                                         type="url"
                                                         value={intakeForm.website}
                                                         onChange={(e) => setIntakeForm({ ...intakeForm, website: e.target.value })}
@@ -263,6 +264,7 @@ export default function MindAI() {
                                                 </h2>
                                                 <div className="flex-1 flex flex-col">
                                                     <textarea
+                                                        aria-label="Câu hỏi của bạn" maxLength={4000}
                                                         value={currentInput}
                                                         onChange={(e) => setCurrentInput(e.target.value)}
                                                         placeholder="Ví dụ: Nhân viên của tôi tốn quá nhiều thời gian nhập liệu thủ công, tôi muốn tự động hoá quy trình..."
@@ -300,7 +302,7 @@ export default function MindAI() {
                                 <div className="flex flex-col h-[650px] bg-slate-900/50 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-sm">
                                     {/* Messages */}
                                     <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-                                        {history.map((msg, idx) => (
+                                        {(loading ? history : history.slice(0, -1)).map((msg, idx) => (
                                             <div key={idx} className="space-y-4">
                                                 {/* User message */}
                                                 <div className="flex justify-end">
@@ -313,13 +315,21 @@ export default function MindAI() {
                                                     <div className="w-8 h-8 bg-teal-500/20 rounded-full flex items-center justify-center flex-shrink-0">
                                                         <Brain className="w-4 h-4 text-teal-400" />
                                                     </div>
-                                                    <div className="bg-slate-800/50 border border-white/5 text-slate-200 px-5 py-3 rounded-2xl rounded-tl-none max-w-[90%]">
+                                                    <div className="bg-slate-800/50 border border-white/5 text-slate-200 px-5 py-3 rounded-2xl rounded-tl-none max-w-[90%] whitespace-pre-wrap break-words">
                                                         {msg.ai}
                                                     </div>
                                                 </div>
                                             </div>
                                         ))}
 
+                                        {((loading && pendingMessage) || (!loading && history.length > 0)) && (
+                                            <div className="flex justify-end">
+                                                <div className="bg-white/10 text-white px-5 py-3 rounded-2xl rounded-tr-none max-w-[80%] break-words">
+                                                    {loading ? pendingMessage : history[history.length - 1].user}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {chatError && <p role="alert" className="text-sm text-amber-300 bg-amber-500/10 rounded-xl p-4">{chatError}</p>}
                                         {/* Current AI response */}
                                         {loading ? (
                                             <div className="flex justify-start gap-3">
@@ -331,7 +341,7 @@ export default function MindAI() {
                                                     Đang phân tích vấn đề...
                                                 </div>
                                             </div>
-                                        ) : aiData.next_question ? (
+                                        ) : (aiData.next_question || aiData.analysis) ? (
                                             <div className="flex justify-start gap-3">
                                                 <div className="w-8 h-8 bg-teal-500/20 rounded-full flex items-center justify-center flex-shrink-0">
                                                     <Brain className="w-4 h-4 text-teal-400" />
@@ -387,6 +397,7 @@ export default function MindAI() {
                                         ) : (
                                             <form onSubmit={handleReply} className="relative">
                                                 <input
+                                                    aria-label="Câu trả lời của bạn" maxLength={4000}
                                                     type="text"
                                                     value={currentInput}
                                                     onChange={(e) => setCurrentInput(e.target.value)}
@@ -400,6 +411,7 @@ export default function MindAI() {
                                                     </span>
                                                     <button
                                                         type="submit"
+                                                        aria-label="Gửi câu trả lời"
                                                         disabled={!currentInput.trim() || loading}
                                                         className="p-2 text-teal-400 hover:bg-teal-500/10 rounded-lg transition-colors disabled:opacity-50"
                                                     >
@@ -444,33 +456,40 @@ export default function MindAI() {
                                     <div className="bg-gradient-to-br from-teal-900/20 to-indigo-900/20 border border-white/10 rounded-3xl p-6">
                                         <h3 className="text-white font-bold mb-2">Đã đủ thông tin?</h3>
                                         <p className="text-sm text-slate-400 mb-4">
-                                            Nếu bạn muốn nhận bản đề xuất giải pháp ngay bây giờ.
+                                            Để lại thông tin để Mindtransform xem bối cảnh và liên hệ về bước tiếp theo.
                                         </p>
 
-                                        {!email ? (
-                                            <div className="space-y-3">
+                                        <form className="space-y-3" onSubmit={handleFinish}>
+                                                <label className="block text-sm text-slate-300" htmlFor="mindai-name">Họ và tên</label>
+                                                <input id="mindai-name" type="text" required maxLength={150} autoComplete="name"
+                                                    value={contactName} onChange={e => setContactName(e.target.value)}
+                                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+                                                <label className="block text-sm text-slate-300" htmlFor="mindai-email">Email</label>
                                                 <input
+                                                    id="mindai-email"
                                                     type="email"
+                                                    required
+                                                    autoComplete="email"
+                                                    maxLength={254}
+                                                    value={email}
                                                     placeholder="Nhập email của bạn"
                                                     className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-500/50"
                                                     onChange={(e) => setEmail(e.target.value)}
                                                 />
+                                                <label className="block text-sm text-slate-300" htmlFor="mindai-phone">Số điện thoại / Zalo (không bắt buộc)</label>
+                                                <input id="mindai-phone" type="tel" autoComplete="tel" maxLength={30}
+                                                    value={contactPhone} onChange={e => setContactPhone(e.target.value)}
+                                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+                                                <p className="text-xs text-slate-400">Khi gửi, bạn đồng ý để Mindtransform dùng thông tin và nội dung tư vấn này để liên hệ về yêu cầu của bạn.</p>
+                                                {submitError && <p role="alert" className="text-sm text-amber-300">{submitError}</p>}
                                                 <button
-                                                    onClick={handleFinish}
-                                                    disabled={!email}
+                                                    type="submit"
+                                                    disabled={loading || !history.length || !email.trim() || !contactName.trim()}
                                                     className="w-full bg-white text-slate-900 font-bold py-2 rounded-lg text-sm hover:bg-teal-50 disabled:opacity-50 transition-colors"
                                                 >
-                                                    Kết thúc & Nhận Proposal
+                                                    Gửi yêu cầu tư vấn
                                                 </button>
-                                            </div>
-                                        ) : (
-                                            <button
-                                                onClick={handleFinish}
-                                                className="w-full bg-teal-500 text-white font-bold py-2 rounded-lg text-sm hover:bg-teal-400 transition-colors"
-                                            >
-                                                Xác nhận gửi
-                                            </button>
-                                        )}
+                                        </form>
                                     </div>
                                 </div>
                             </motion.div>
@@ -502,14 +521,13 @@ export default function MindAI() {
                                 </div>
                                 <h2 className="text-3xl font-bold text-white mb-4">Đã gửi yêu cầu thành công!</h2>
                                 <p className="text-slate-300 mb-8 leading-relaxed">
-                                    Cảm ơn bạn đã dành thời gian trao đổi. Dựa trên <strong>{history.length} điểm dữ liệu</strong> thu thập được, Mind.Transform sẽ xây dựng một bản Proposal chi tiết và gửi tới email <strong>{email}</strong> trong thời gian sớm nhất.
+                                    Mindtransform đã lưu yêu cầu cùng <strong>{history.length} lượt trao đổi</strong>. Chúng tôi sẽ xem xét thông tin và liên hệ qua email <strong>{email}</strong> để thống nhất bước tiếp theo.
                                 </p>
-                                <button
-                                    onClick={() => window.location.reload()}
+                                <Link to="/"
                                     className="px-8 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-colors border border-white/10"
                                 >
                                     Quay về trang chủ
-                                </button>
+                                </Link>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -532,6 +550,7 @@ export default function MindAI() {
 
                             {/* Modal */}
                             <motion.div
+                                role="dialog" aria-modal="true" aria-labelledby="mindai-limit-title"
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 exit={{ scale: 0.9, opacity: 0 }}
@@ -540,14 +559,18 @@ export default function MindAI() {
                                 <div className="w-16 h-16 bg-amber-500/15 rounded-full flex items-center justify-center mx-auto mb-5">
                                     <AlertTriangle className="w-8 h-8 text-amber-400" />
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-3">
+                                <h3 id="mindai-limit-title" className="text-2xl font-bold text-white mb-3">
                                     Đã hết lượt tư vấn
                                 </h3>
                                 <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-                                    Bạn đã sử dụng hết {MAX_CHAT_MESSAGES} lượt tư vấn miễn phí. Để được tư vấn chuyên sâu hơn, hãy liên hệ trực tiếp với đội ngũ Mind.Transform qua Zalo.
+                                    {chatError || `Bạn đã sử dụng hết ${MAX_CHAT_MESSAGES} lượt tư vấn miễn phí. Bạn có thể xem lại hội thoại và gửi yêu cầu, hoặc liên hệ qua Zalo.`}
                                 </p>
 
                                 <div className="space-y-3">
+                                    <button onClick={() => setShowLimitModal(false)}
+                                        className="w-full bg-white text-slate-950 font-bold py-3 rounded-xl text-sm">
+                                        Xem lại & gửi yêu cầu
+                                    </button>
                                     <a
                                         href={`https://zalo.me/${ZALO_CONTACT}`}
                                         target="_blank"
@@ -561,7 +584,7 @@ export default function MindAI() {
                                         onClick={() => window.location.reload()}
                                         className="w-full bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl font-medium transition-colors border border-white/10 text-sm"
                                     >
-                                        Bắt đầu lại
+                                        Bắt đầu lại (xóa hội thoại)
                                     </button>
                                 </div>
                             </motion.div>

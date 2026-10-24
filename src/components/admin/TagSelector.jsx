@@ -30,6 +30,7 @@ export default function TagSelector({ label, options, selected = [], onChange, c
                         <button
                             key={tag}
                             type="button"
+                            aria-pressed={isSelected}
                             onClick={() => toggle(tag)}
                             className={`px-3 py-2 rounded-lg text-xs font-medium transition-all text-center ${
                                 isSelected

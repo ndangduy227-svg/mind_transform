@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { STATIC_POSTS } from '../data/staticPosts';
+import { normalizeTemplate } from '../utils/template';
 
 const cache = {
     posts: null,
@@ -81,7 +82,7 @@ export const templates = {
         const { data, error } = await query;
         if (error) throw new Error(`CMS fetch failed: ${error.message}`);
 
-        let result = data ?? [];
+        let result = (data ?? []).map(normalizeTemplate);
 
         if (filters.industry) {
             result = result.filter(t => {
@@ -115,7 +116,7 @@ export const templates = {
             .single();
 
         if (error) return null;
-        return data;
+        return data ? normalizeTemplate(data) : null;
     },
 
     getCategories: async () => {
@@ -158,7 +159,7 @@ export const templates = {
             .limit(limit);
 
         if (error) return [];
-        return data ?? [];
+        return (data ?? []).map(normalizeTemplate);
     },
 };
 

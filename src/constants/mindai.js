@@ -27,7 +27,7 @@ export const COMPANY_SIZES = [
     '200+ người',
 ];
 
-export const MAX_CHAT_MESSAGES = 5;
+export { MAX_CHAT_MESSAGES } from '../utils/consultation';
 
 export const ZALO_CONTACT = '0929657232';
 

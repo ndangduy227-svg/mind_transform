@@ -137,14 +137,18 @@ export default function TemplateDetail() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        let active = true;
         setLoading(true);
         setError(null);
+        setTemplate(null);
+        setRelated([]);
 
         Promise.all([
             templatesService.getBySlug(slug),
             templatesService.getRelated(slug, 3),
         ])
             .then(([tmpl, rel]) => {
+                if (!active) return;
                 if (tmpl) {
                     setTemplate(tmpl);
                     setRelated(rel);
@@ -154,10 +158,12 @@ export default function TemplateDetail() {
                 setLoading(false);
             })
             .catch(err => {
+                if (!active) return;
                 console.error("Error fetching template:", err);
                 setError("Không thể tải template.");
                 setLoading(false);
             });
+        return () => { active = false; };
     }, [slug]);
 
     if (loading) {
