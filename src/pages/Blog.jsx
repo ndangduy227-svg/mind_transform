@@ -1,231 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { motion } from 'framer-motion';
-import { Calendar, User, ArrowRight, Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { getGoogleDriveImageUrl } from '../utils/imageHelper';
+import { ArrowRight, Search } from 'lucide-react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { posts as postsService } from '../services/cmsService';
+import { getGoogleDriveImageUrl } from '../utils/imageHelper';
+import { formatPostDate, readingMinutes, searchText } from '../utils/article';
+import { articleProfile } from '../data/articleProfiles';
+import { WorkflowCover } from '../components/blog/ArticleBlocks';
+import '../styles/editorial.css';
 
-// Category Descriptions
-const CATEGORY_INFO = {
-    "Strategy": {
-        title: "Chiến lược & Tư duy",
-        desc: "Định hình tầm nhìn và lộ trình chuyển đổi số phù hợp với mô hình kinh doanh."
-    },
-    "Technology": {
-        title: "Công nghệ & Giải pháp",
-        desc: "Cập nhật các xu hướng công nghệ mới và đánh giá các giải pháp phần mềm."
-    },
-    "Methodology": {
-        title: "Phương pháp luận",
-        desc: "Các phương pháp quản trị hiện đại: Agile, Lean, Design Thinking..."
-    },
-    "Data": {
-        title: "Dữ liệu & Phân tích",
-        desc: "Khai thác sức mạnh của dữ liệu để ra quyết định chính xác."
-    },
-    "Case Study": {
-        title: "Câu chuyện thành công",
-        desc: "Bài học thực tế từ các dự án chuyển đổi số đã triển khai."
-    }
-};
+const CATEGORY_LABELS = { Strategy:'Chiến lược & tư duy', Technology:'Công nghệ & giải pháp', Methodology:'Phương pháp vận hành', Data:'Dữ liệu & đo lường', 'Case Study':'Case study' };
 
-const BlogPostCard = ({ title, summary, category, date, author, slug, image }) => (
-    <Link to={`/blog/${slug}`} className="block h-full min-w-[300px] md:min-w-[350px] snap-start">
-        <div className="group flex flex-col h-full bg-white/5 border border-white/5 rounded-2xl overflow-hidden hover:border-teal-500/30 transition-all hover:bg-white/[0.07]">
-            <div className="h-48 bg-slate-800/50 relative overflow-hidden">
-                {image ? (
-                    <img
-                        src={getGoogleDriveImageUrl(image)}
-                        alt={title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-teal-900/20 to-indigo-900/20 group-hover:scale-105 transition-transform duration-700" />
-                )}
-                <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 text-xs font-medium bg-teal-500/10 text-teal-400 rounded-full border border-teal-500/20">
-                        {category}
-                    </span>
-                </div>
-            </div>
-            <div className="p-6 flex-1 flex flex-col">
-                <div className="flex items-center gap-4 text-xs text-slate-500 mb-4">
-                    <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(date).toLocaleDateString('vi-VN')}
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        {author}
-                    </div>
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-white group-hover:text-teal-400 transition-colors line-clamp-2">
-                    {title}
-                </h3>
-                <p className="text-slate-400 text-sm leading-relaxed mb-6 flex-1 line-clamp-3">
-                    {summary}
-                </p>
-                <div className="flex items-center gap-2 text-sm font-medium text-teal-400 group-hover:gap-3 transition-all mt-auto">
-                    Đọc tiếp <ArrowRight className="w-4 h-4" />
-                </div>
-            </div>
-        </div>
-    </Link>
-);
-
-const CategorySection = ({ category, posts }) => {
-    const info = CATEGORY_INFO[category] || { title: category, desc: `Các bài viết về ${category}` };
-    const scrollRef = React.useRef(null);
-
-    const scroll = (direction) => {
-        if (scrollRef.current) {
-            const { current } = scrollRef;
-            const scrollAmount = direction === 'left' ? -400 : 400;
-            current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        }
-    };
-
-    if (posts.length === 0) return null;
-
-    return (
-        <div className="mb-16">
-            <div className="flex items-end justify-between mb-6">
-                <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 flex items-center gap-3">
-                        <span className="w-2 h-8 bg-teal-500 rounded-full inline-block"></span>
-                        {info.title}
-                    </h2>
-                    <p className="text-slate-400 text-sm md:text-base max-w-2xl">
-                        {info.desc}
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    <button onClick={() => scroll('left')} className="p-2 rounded-full border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
-                        <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button onClick={() => scroll('right')} className="p-2 rounded-full border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
-                        <ChevronRight className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
-
-            <div
-                ref={scrollRef}
-                className="flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory custom-scrollbar scroll-smooth"
-            >
-                {posts.map((post, index) => (
-                    <BlogPostCard key={index} {...post} />
-                ))}
-            </div>
-        </div>
-    );
-};
+function PostMeta({ post }) {
+    const date = formatPostDate(post.date);
+    return <div className="article-meta">{date && <time dateTime={post.date}>{date}</time>}<span>{readingMinutes(post.content)} phút đọc</span></div>;
+}
 
 export default function Blog() {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-
+    const [error, setError] = useState(false);
+    const [params, setParams] = useSearchParams();
+    const location = useLocation();
+    const query = params.get('q') || '';
+    const category = params.get('category') || '';
     useEffect(() => {
-        postsService.getAll()
-            .then(data => {
-                setPosts(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error("Error fetching posts:", err);
-                setError("Không thể tải bài viết. Vui lòng thử lại sau.");
-                setLoading(false);
-            });
+        let active = true;
+        postsService.getAll().then(data => { if (active) { setPosts(data); setLoading(false); } })
+            .catch(() => { if (active) { setError(true); setLoading(false); } });
+        return () => { active = false; };
     }, []);
-
-    // Filter posts by search term
-    const filteredPosts = posts.filter(post =>
-        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.summary.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    // Group posts by category
-    const groupedPosts = filteredPosts.reduce((acc, post) => {
-        const cat = post.category || 'Uncategorized';
-        if (!acc[cat]) acc[cat] = [];
-        acc[cat].push(post);
-        return acc;
-    }, {});
-
-    // Get list of categories (prioritize defined ones)
-    const categories = [...Object.keys(CATEGORY_INFO), ...Object.keys(groupedPosts).filter(c => !CATEGORY_INFO[c])];
-
-    return (
-        <>
-            <Helmet>
-                <title>Blog Chuyển đổi số | Mind.Transform</title>
-                <meta name="description" content="Chia sẻ kiến thức, chiến lược và case study về chuyển đổi số doanh nghiệp từ đội ngũ Mind.Transform." />
-                <link rel="canonical" href="https://mind-transform.vercel.app/blog" />
-                <meta property="og:title" content="Blog Chuyển đổi số | Mind.Transform" />
-                <meta property="og:description" content="Chia sẻ kiến thức, chiến lược và case study về chuyển đổi số doanh nghiệp." />
-                <meta property="og:url" content="https://mind-transform.vercel.app/blog" />
-                <meta property="og:type" content="website" />
-                <meta name="twitter:card" content="summary_large_image" />
-            </Helmet>
-
-            <div className="py-20 px-6 min-h-screen">
-            <div className="max-w-7xl mx-auto">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="text-center mb-16"
-                >
-                    <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                        Góc nhìn <span className="text-teal-400">Mind.Transform</span>
-                    </h1>
-                    <p className="text-slate-400 max-w-2xl mx-auto text-lg mb-8">
-                        Chia sẻ kiến thức, kinh nghiệm và góc nhìn về Chuyển đổi số, Quản trị và Công nghệ.
-                    </p>
-
-                    {/* Search Box */}
-                    <div className="max-w-md mx-auto relative">
-                        <input
-                            type="text"
-                            placeholder="Bạn đang tìm kiếm gì? (ví dụ: Lark Suite, CRM...)"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-900 border border-white/10 rounded-full px-6 py-3 pl-12 text-white focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 transition-all"
-                        />
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                    </div>
-                </motion.div>
-
-                {loading ? (
-                    <div className="flex justify-center py-20">
-                        <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
-                    </div>
-                ) : error ? (
-                    <div className="text-center text-red-400 py-20">
-                        {error}
-                    </div>
-                ) : filteredPosts.length === 0 ? (
-                    <div className="text-center text-slate-500 py-20">
-                        Không tìm thấy bài viết nào phù hợp.
-                    </div>
-                ) : (
-                    <div className="space-y-8">
-                        {categories.map(category => (
-                            groupedPosts[category] && groupedPosts[category].length > 0 && (
-                                <CategorySection
-                                    key={category}
-                                    category={category}
-                                    posts={groupedPosts[category]}
-                                />
-                            )
-                        ))}
-                    </div>
-                )}
+    const updateFilter = (key, value) => {
+        const next = new URLSearchParams(params);
+        if (value) next.set(key,value); else next.delete(key);
+        setParams(next, { replace: true });
+    };
+    const term = query.trim() ? searchText(query) : '';
+    const filtered = posts.filter(post => (!category || post.category === category) && (!term || searchText(`${post.title || ''} ${post.summary || ''}`).includes(term)));
+    const [featured, ...remaining] = filtered;
+    const profile = articleProfile(featured);
+    const linkState = { blogFrom: location.pathname + location.search };
+    const categories = [...new Set(posts.map(post => post.category).filter(Boolean))];
+    const featuredImage = featured && getGoogleDriveImageUrl(featured.cover_image || featured.image);
+    return <>
+        <Helmet><title>Góc vận hành | Mindtransform</title><meta name="description" content="Case study, sơ đồ quy trình và bài học giúp doanh nghiệp nhỏ nhìn rõ điểm kẹt, bắt đầu từ một việc cụ thể." /><link rel="canonical" href="https://mind-transform.vercel.app/blog" /><meta property="og:title" content="Góc vận hành | Mindtransform" /><meta property="og:description" content="Hiểu đúng vấn đề. Gỡ một điểm cụ thể. Case study, quy trình và bài học từ Mindtransform." /><meta property="og:url" content="https://mind-transform.vercel.app/blog" /><meta property="og:type" content="website" /><meta name="twitter:card" content="summary_large_image" /></Helmet>
+        <div className="editorial-page"><div className="editorial-container">
+            <header className="blog-intro"><p className="editorial-kicker">Góc vận hành · Mindtransform</p><h1>Bắt đầu từ<br />một điểm kẹt.</h1><p>Nhìn rõ vấn đề, hiểu cách gỡ và chọn một việc để thử. Những góc nhìn về vận hành, qua câu chuyện và sơ đồ cụ thể.</p></header>
+            <div className="blog-controls"><label className="blog-search"><Search size={20} aria-hidden="true" /><span className="sr-only">Tìm bài viết</span><input type="search" value={query} onChange={event => updateFilter('q',event.target.value)} placeholder="Tìm vấn đề: bàn giao, tồn kho, báo cáo..." /></label>
+                {categories.length > 1 && <div className="blog-topics" role="group" aria-label="Chủ đề bài viết"><button type="button" aria-pressed={!category} onClick={() => updateFilter('category','')}>Tất cả</button>{categories.map(value => <button type="button" key={value} aria-pressed={category === value} onClick={() => updateFilter('category',value)}>{CATEGORY_LABELS[value] || value}</button>)}</div>}
             </div>
-        </div>
-        </>
-    );
+            {loading ? <p className="blog-no-results" role="status">Đang tải bài viết...</p> : error ? <p className="blog-no-results" role="alert">Không thể tải bài viết. Vui lòng tải lại trang để thử lại.</p> : !featured ? <div className="blog-no-results" role="status"><p>Không tìm thấy bài viết phù hợp.</p><button type="button" className="editorial-button" onClick={() => setParams({})}>Xem tất cả bài viết</button></div> : <>
+                <article className="blog-feature"><div><p className="editorial-kicker">{profile?.label || CATEGORY_LABELS[featured.category] || featured.category || 'Góc nhìn'} · Longform</p><h2><Link to={`/blog/${featured.slug}`} state={linkState}>{featured.title}</Link></h2><p>{profile?.lead || featured.summary}</p><PostMeta post={featured} />{profile?.disclosure && <p className="article-caption">{profile.disclosure}</p>}<Link to={`/blog/${featured.slug}`} state={linkState} className="editorial-button">Đọc câu chuyện <ArrowRight size={17} aria-hidden="true" /></Link></div>{profile ? <WorkflowCover profile={profile} /> : featuredImage ? <Link to={`/blog/${featured.slug}`} state={linkState} aria-label={`Đọc ${featured.title}`}><img src={featuredImage} alt="" className="blog-thumbnail" decoding="async" /></Link> : null}</article>
+                {remaining.length > 0 && <div className="blog-grid">{remaining.map(post => {
+                    const image = getGoogleDriveImageUrl(post.cover_image || post.image);
+                    return <article key={post.slug} className="blog-card">{image && <Link to={`/blog/${post.slug}`} state={linkState} aria-label={`Đọc ${post.title}`}><img src={image} alt="" className="blog-thumbnail" loading="lazy" decoding="async" /></Link>}<p className="editorial-kicker">{articleProfile(post)?.label || CATEGORY_LABELS[post.category] || post.category || 'Góc nhìn'}</p><h2><Link to={`/blog/${post.slug}`} state={linkState}>{post.title}</Link></h2>{post.summary && <p>{post.summary}</p>}<PostMeta post={post} /></article>;
+                })}</div>}
+            </>}
+        </div></div>
+    </>;
 }

@@ -4,7 +4,11 @@ Updated: 2026-10-24, Asia/Bangkok
 Actor: Codex
 Status: Tested website repair release. Founder authorized publishing to GitHub main and Vercel on 2026-10-24. Deployment outcome is tracked by the Vercel commit status; browser visual verification remains unclaimed.
 
-## Scope and evidence
+## Editorial blog follow-up — 2026-10-24
+
+Founder approved the Znews-inspired Longform implementation. `/blog` and `/blog/:slug` now use the editorial reading system, and the static Ô Tô Hợp Nhất article is the first enhanced case. All 28 tests and the production build pass. See `docs/Blog_Editorial_Reading_Flow.md` for implementation, compatibility and verification limits. Release status is tracked by the Vercel check on the new main commit.
+
+## Original repair scope and evidence — 2026-10-22
 
 - Canonical source: `11_Website/mind_transform/`.
 - Baseline Git commit: `e38b276`.

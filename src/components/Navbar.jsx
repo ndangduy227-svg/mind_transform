@@ -10,7 +10,7 @@ export default function Navbar() {
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const isActive = (path) => location.pathname === path;
+    const isActive = (path) => location.pathname === path || (path !== '/' && location.pathname.startsWith(`${path}/`));
 
     const navLinks = [
         { path: '/', label: 'Trang chủ' },

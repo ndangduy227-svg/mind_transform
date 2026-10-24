@@ -5,9 +5,12 @@ import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
 const output = resolve(root, '.test-output/ui.test.cjs');
+const blogOutput = resolve(root, '.test-output/blog.test.cjs');
 await mkdir(resolve(root, '.test-output'), { recursive: true });
-await build({ entryPoints: ['tests/ui.test.jsx'], outfile: output, bundle: true,
-    platform: 'node', format: 'cjs', packages: 'external', jsx: 'automatic',
+for (const [entry, outfile] of [['tests/ui.test.jsx', output], ['tests/blog.test.jsx', blogOutput]]) await build({ entryPoints: [entry], outfile, bundle: true,
+    platform: 'node', format: 'cjs', jsx: 'automatic',
+    external: ['react', 'react/*', 'react-dom', 'react-dom/*', '@testing-library/react', 'react-router-dom', 'react-helmet-async', 'framer-motion', 'jsdom', 'lucide-react'],
+    loader: { '.md': 'text', '.css': 'empty' },
     plugins: [{ name: 'offline-supabase', setup(builder) {
         builder.onLoad({ filter: /[/\\]lib[/\\]supabase\.js$/ }, () => ({
             contents: "export { mockSupabase as supabase } from './tests/ui-mocks.js';", resolveDir: root, loader: 'js',
@@ -15,6 +18,6 @@ await build({ entryPoints: ['tests/ui.test.jsx'], outfile: output, bundle: true,
     } }],
 });
 try {
-    const result = spawnSync(process.execPath, ['--test', output], { stdio: 'inherit' });
+    const result = spawnSync(process.execPath, ['--test', output, blogOutput], { stdio: 'inherit' });
     process.exitCode = result.status ?? 1;
-} finally { await unlink(output); }
+} finally { await Promise.all([unlink(output), unlink(blogOutput)]); }
