@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { STATIC_POSTS } from '../data/staticPosts';
 import { normalizeTemplate } from '../utils/template';
+import { normalizePost } from '../utils/post';
 
 const cache = {
     posts: null,
@@ -18,7 +19,7 @@ function mergePosts(remotePosts = []) {
         if (!postsBySlug.has(post.slug)) postsBySlug.set(post.slug, post);
     });
 
-    return [...postsBySlug.values()].sort(
+    return [...postsBySlug.values()].map(normalizePost).sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
 }
@@ -50,7 +51,7 @@ export const posts = {
 
     getBySlug: async (slug) => {
         const staticPost = STATIC_POSTS.find(post => post.slug === slug);
-        if (staticPost) return staticPost;
+        if (staticPost) return normalizePost(staticPost);
 
         const { data, error } = await supabase
             .from('posts')
@@ -60,7 +61,7 @@ export const posts = {
             .single();
 
         if (error) return null;
-        return data;
+        return data ? normalizePost(data) : null;
     },
 };
 

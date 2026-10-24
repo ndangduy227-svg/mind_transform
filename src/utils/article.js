@@ -1,3 +1,5 @@
+import { decodeDocument, documentText } from './editorialDocument.js';
+
 export function headingSlug(value) {
     return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/[đĐ]/g, 'd').toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, '')
@@ -17,8 +19,7 @@ export function plainText(value = '') {
         .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/[*_`~#>]/g, '').replace(/\s+/g, ' ').trim();
 }
 
-export function markdownHeadings(content = '') {
-    const used = new Set();
+export function markdownHeadings(content = '', used = new Set()) {
     const headings = [];
     let fence = null;
     String(content).split('\n').forEach((line, index) => {
@@ -54,7 +55,9 @@ export function editorialParts(content = '', allowed = []) {
 }
 
 export function readingMinutes(content) {
-    return Math.max(1, Math.ceil(plainText(content).split(/\s+/).filter(Boolean).length / 230));
+    const decoded = decodeDocument(content);
+    const text = decoded.kind === 'structured' ? documentText(decoded.document) : content;
+    return Math.max(1, Math.ceil(plainText(text).split(/\s+/).filter(Boolean).length / 230));
 }
 
 export function formatPostDate(value) {
@@ -76,6 +79,7 @@ export function searchText(value) {
 }
 
 export function processArticleContent(content = '') {
+    if (decodeDocument(content).kind !== 'legacy') return typeof content === 'string' ? content : JSON.stringify(content);
     return String(content).replace(/\[Image:\s*([^;\]]+)(?:;\s*([^\]]+))?\]/g,
         (_match, url, caption) => `![${caption || ''}](${url.trim()})`);
 }

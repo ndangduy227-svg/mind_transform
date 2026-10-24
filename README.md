@@ -6,9 +6,9 @@
 
 ---
 
-## Verification — 2026-10-24
+## Verification — 2026-10-25
 
-Founder approved the website repairs and then the editorial blog implementation on 2026-10-24. The test suites pass 28 tests (17 API/data/helper, 11 component interactions), and the production build passes in a clean local source mirror. Production releases are tracked by the Vercel check on this repository's `main` branch. Browser visual and real lead-delivery verification are not claimed.
+Founder approved the website/blog implementation and requested reusable CMS authoring. The suites now cover 39 tests (21 API/data/helper, 18 component interactions), including author → save → reload → publish/render for independent article slugs. Production releases are tracked by Vercel's status on `main`. Tests run in a clean local source mirror. Live authenticated CMS/Storage and browser pixel verification are not claimed.
 
 MindAI stores successful user/assistant turns, permits five exchanges and saves submitted contact/intake/transcript to the existing `leads` schema. Per-turn durable sessions and automatic proposal/email delivery are not implemented. See `docs/Website_V1_Audit.md` for scope and limits.
 
@@ -21,6 +21,8 @@ Install dependencies in a clean local development checkout rather than reusing t
 ## Tech Stack
 
 The blog now uses an editorial Longform layout with responsive contents, wide media and image viewing. The Ô Tô Hợp Nhất case adds reusable workflow/facts/gallery blocks. Authoring, source labels and verification limits are documented in [docs/Blog_Editorial_Reading_Flow.md](docs/Blog_Editorial_Reading_Flow.md).
+
+CMS authors can choose formats, cover/appearance/CTA settings and nine block types; reorder/duplicate blocks and items; preview desktop/mobile; and import/export reusable documents. Start at `/admin/post/new`. See [docs/CMS_Editorial_Authoring.md](docs/CMS_Editorial_Authoring.md). Configuration is stored in the existing text `content` column; no database migration is required.
 
 | Layer | Technology |
 |---|---|

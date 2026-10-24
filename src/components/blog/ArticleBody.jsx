@@ -4,12 +4,27 @@ import { isHTMLContent } from '../../utils/contentRenderer';
 import { markdownHeadings, uniqueHeadingId, editorialParts } from '../../utils/article';
 import { getGoogleDriveImageUrl } from '../../utils/imageHelper';
 import ArticleImage from './ArticleImage';
-import { EditorialBlock } from './ArticleBlocks';
+import { EditorialBlock, StructuredBlock } from './ArticleBlocks';
+import { decodeDocument, documentIssues } from '../../utils/editorialDocument';
 
 const allowedTags = new Set(['p','div','span','section','h1','h2','h3','h4','h5','h6','ul','ol','li','strong','b','em','i','u','s','del','blockquote','pre','code','table','thead','tbody','tfoot','tr','td','th','caption','a','img','figure','figcaption','hr','br','sup','sub','mark','details','summary']);
 
-export function articleModel(content, profile) {
-    if (!isHTMLContent(content)) return { headings: markdownHeadings(content), parts: editorialParts(content, profile ? ['workflow', 'statement', 'facts', 'gallery'] : []) };
+export function articleModel(content, profile, used = new Set(['article-next-title'])) {
+    const decoded = decodeDocument(content);
+    if (decoded.kind === 'invalid' || decoded.kind === 'unsupported') return { headings:[], error:decoded.message };
+    if (decoded.kind === 'structured') {
+        const issues = documentIssues(decoded.document);
+        if (issues.length) return { headings:[], error:'Bài viết có cấu hình chưa hợp lệ.' };
+        const headings = [];
+        const blocks = decoded.document.blocks.map(block => {
+            if (block.type === 'text') { const model = articleModel(block.content,null,used); headings.push(...model.headings); return {...block,model}; }
+            const headingId = block.title ? uniqueHeadingId(block.title,used) : undefined;
+            if (headingId) headings.push({id:headingId,text:block.title,level:2});
+            return {...block,headingId};
+        });
+        return { headings, blocks };
+    }
+    if (!isHTMLContent(content)) return { headings: markdownHeadings(content,used), parts: editorialParts(content, profile ? ['workflow', 'statement', 'facts', 'gallery'] : []) };
     const template = document.createElement('template');
     template.innerHTML = content;
     // Parse legacy CMS HTML inertly, then render only safe React elements and attributes.
@@ -21,7 +36,6 @@ export function articleModel(content, profile) {
         } else node.remove();
     });
     template.content.querySelectorAll('script,style,object,embed,link,meta,base,svg,math,form,template').forEach(node => node.remove());
-    const used = new Set(['article-next-title']);
     template.content.querySelectorAll('[id],h1,h2,h3').forEach(node => node.setAttribute('id', uniqueHeadingId(node.textContent.trim(), used, node.getAttribute('id'))));
     const headings = [...template.content.querySelectorAll('h1,h2,h3')].map(node => ({ text: node.textContent.trim(), id: node.getAttribute('id'), level: Math.max(2, Number(node.tagName.slice(1))) }));
     return { headings, html: template.content };
@@ -59,9 +73,13 @@ function renderHtmlNode(node, key) {
     return React.createElement(tag === 'h1' ? 'h2' : tag, props, ['br','hr'].includes(tag) ? undefined : children);
 }
 
-export default function ArticleBody({ model, profile }) {
-    if (model.html) return <div className="article-body">{[...model.html.childNodes].map((node,index) => renderHtmlNode(node, `html-${index}`))}</div>;
-    return <div className="article-body">{model.parts.map((part, index) => {
+export default function ArticleBody({ model, profile, bare = false }) {
+    const Wrapper = bare ? React.Fragment : 'div';
+    const wrapperProps = bare ? {} : {className:'article-body'};
+    if (model.error) return <div className="article-body"><p role="status">{model.error}</p></div>;
+    if (model.blocks) return <Wrapper {...wrapperProps}>{model.blocks.map(block => block.model ? <ArticleBody key={block.id} model={block.model} bare /> : <StructuredBlock key={block.id} block={block} headingId={block.headingId} />)}</Wrapper>;
+    if (model.html) return <Wrapper {...wrapperProps}>{[...model.html.childNodes].map((node,index) => renderHtmlNode(node, `html-${index}`))}</Wrapper>;
+    return <Wrapper {...wrapperProps}>{model.parts.map((part, index) => {
         if (part.block) return <EditorialBlock key={`block-${index}`} name={part.block} profile={profile} />;
         const heading = Tag => ({ node, children }) => {
             const item = model.headings.find(value => value.line === node.position?.start.line + part.lineOffset);
@@ -77,5 +95,5 @@ export default function ArticleBody({ model, profile }) {
                 return image ? <ArticleImage src={image.properties.src} caption={image.properties.alt} disclosure={profile?.imageDisclosure} evidence={!!profile} /> : <p>{children}</p>;
             },
         }}>{part.content}</Markdown>;
-    })}</div>;
+    })}</Wrapper>;
 }

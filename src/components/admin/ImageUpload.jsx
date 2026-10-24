@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useId, useState, useRef } from 'react';
 import { Upload, X, Loader2, Image as ImageLucide } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -13,7 +13,7 @@ function extractPathFromUrl(url) {
     const marker = '/object/public/images/';
     const idx = url.indexOf(marker);
     if (idx === -1) return '';
-    return decodeURIComponent(url.slice(idx + marker.length));
+    try { return decodeURIComponent(url.slice(idx + marker.length)); } catch { return ''; }
 }
 
 export default function ImageUpload({
@@ -22,11 +22,14 @@ export default function ImageUpload({
     folder = 'posts',
     label = 'Ảnh',
     className = '',
+    removeFromStorage = true,
+    onUploadingChange,
 }) {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const [dragActive, setDragActive] = useState(false);
     const inputRef = useRef(null);
+    const inputId = useId();
 
     const clearError = () => {
         if (error) setTimeout(() => setError(''), 3000);
@@ -50,6 +53,7 @@ export default function ImageUpload({
         if (!validate(file)) return;
 
         setUploading(true);
+        onUploadingChange?.(true);
         setError('');
 
         try {
@@ -67,6 +71,7 @@ export default function ImageUpload({
             clearError();
         } finally {
             setUploading(false);
+            onUploadingChange?.(false);
         }
     };
 
@@ -75,7 +80,7 @@ export default function ImageUpload({
         if (!value) return;
 
         const path = extractPathFromUrl(value);
-        if (path) {
+        if (path && removeFromStorage) {
             await supabase.storage.from('images').remove([path]);
         }
         onChange('');
@@ -112,13 +117,14 @@ export default function ImageUpload({
     return (
         <div className={className}>
             {label && (
-                <label className="block text-xs font-medium text-slate-400 mb-2">
+                <label htmlFor={inputId} className="block text-xs font-medium text-slate-400 mb-2">
                     {label}
                 </label>
             )}
 
             <input
                 ref={inputRef}
+                id={inputId}
                 type="file"
                 accept={ACCEPTED_TYPES.join(',')}
                 onChange={handleFileChange}
@@ -136,6 +142,10 @@ export default function ImageUpload({
             {/* --- Has image state --- */}
             {!uploading && value && (
                 <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Đổi ${label || 'ảnh'}`}
+                    onKeyDown={event => { if(event.currentTarget===event.target && ['Enter',' '].includes(event.key)){event.preventDefault();openPicker();} }}
                     className="relative group cursor-pointer rounded-xl border border-white/10 bg-white/5 overflow-hidden"
                     onClick={openPicker}
                 >
@@ -158,6 +168,10 @@ export default function ImageUpload({
             {/* --- No image / drop zone state --- */}
             {!uploading && !value && (
                 <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Tải ${label || 'ảnh'}`}
+                    onKeyDown={event => { if(['Enter',' '].includes(event.key)){event.preventDefault();openPicker();} }}
                     onClick={openPicker}
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}

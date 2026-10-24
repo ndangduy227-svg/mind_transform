@@ -36,10 +36,9 @@ test('longform has working TOC targets, interactive workflow, gallery, checklist
     assert.ok(screen.getByRole('dialog', { name: 'Pipeline bán hàng' }));
     fireEvent.click(screen.getByRole('button', { name: 'Đóng ảnh' }));
     assert.equal(screen.queryByRole('dialog'), null);
-    const checklist = document.querySelector('.article-checklist');
-    checklist.open = true;
+    assert.ok(document.querySelector('.article-reader-checklist'));
     fireEvent.click(screen.getByLabelText('Đã có người chịu trách nhiệm gỡ điều còn thiếu chưa?'));
-    assert.ok(screen.getByText('1/3 câu đã kiểm tra'));
+    assert.ok(screen.getByText('1/3 mục đã kiểm tra'));
     fireEvent.click(screen.getByRole('button', { name: /Cùng Mindtransform/ }));
     assert.ok(screen.getByText('Consultation opened'));
 });

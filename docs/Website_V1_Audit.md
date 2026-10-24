@@ -8,6 +8,12 @@ Status: Tested website repair release. Founder authorized publishing to GitHub m
 
 Founder approved the Znews-inspired Longform implementation. `/blog` and `/blog/:slug` now use the editorial reading system, and the static Ô Tô Hợp Nhất article is the first enhanced case. All 28 tests and the production build pass. See `docs/Blog_Editorial_Reading_Flow.md` for implementation, compatibility and verification limits. Release status is tracked by the Vercel check on the new main commit.
 
+## CMS authoring follow-up — 2026-10-25
+
+Founder required per-article configuration in the CMS, rather than a one-article implementation. The editor now supports three formats, cover/appearance/contents/CTA settings, nine typed block kinds, reordering/duplication/undo, desktop/mobile preview and reusable JSON import/export. The public and preview paths share `ArticleView`. The example case is stored as the same versioned document; the slug-keyed configuration registry was removed.
+
+The document is encoded in the existing `posts.content` text field. Existing HTML/Markdown is converted only when an author saves; no database migration or RLS changes. Image-column compatibility and safe unlinking are included. All 39 automated checks cover the saved data and interactions; live authenticated saves, Storage, TinyMCE toolbar and browser pixel layout are not claimed. Saved browser permissions deny the production origin. See `docs/CMS_Editorial_Authoring.md` for workflow, research sources, schema and limits. Deployment is tracked by the Vercel status on main.
+
 ## Original repair scope and evidence — 2026-10-22
 
 - Canonical source: `11_Website/mind_transform/`.

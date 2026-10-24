@@ -4,10 +4,11 @@ import { ArrowLeft, Upload, FileJson, Download, Loader2, CheckCircle2, XCircle, 
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../../lib/supabase';
 import { invalidateCache } from '../../services/cmsService';
+import { adminPosts } from '../../services/cmsAdminService';
 
 // JSON schema definitions
 // Các trường ảnh — sẽ tự động loại bỏ nếu rỗng trước khi insert
-const IMAGE_FIELDS = ['cover_image', 'thumbnail', 'screenshots'];
+const IMAGE_FIELDS = ['image', 'cover_image', 'thumbnail', 'screenshots'];
 
 const POST_SCHEMA = {
     required: ['title', 'slug', 'content'],
@@ -15,8 +16,8 @@ const POST_SCHEMA = {
         title: 'Tiêu đề bài viết',
         slug: 'Đường dẫn (VD: bai-viet-moi)',
         summary: 'Mô tả ngắn',
-        content: 'Nội dung HTML',
-        cover_image: '(tuỳ chọn) URL ảnh bìa — bỏ trống nếu chưa có',
+        content: 'HTML/Markdown hoặc cấu hình bài theo khối (schema mindtransform.article, version 1)',
+        image: '(tuỳ chọn) URL ảnh bìa — bỏ trống nếu chưa có',
         category: 'Strategy | Technology | Methodology | Data | Case Study',
         author: 'Tên tác giả',
         status: 'Draft | Published',
@@ -236,6 +237,14 @@ export default function BulkImport() {
         for (let i = 0; i < items.length; i += batchSize) {
             const batch = items.slice(i, i + batchSize).map(cleanItemForInsert);
             const table = importType;
+
+            if(table==='posts') {
+                for(const item of batch) {
+                    try {await adminPosts.create(item);importResult.success++;}
+                    catch(error) {importResult.failed++;importResult.errors.push(`${item.title || item.slug}: ${error.message}`);}
+                }
+                continue;
+            }
 
             const { error } = await supabase.from(table).insert(batch);
 
