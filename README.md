@@ -26,6 +26,8 @@ CMS authors can choose formats, cover/appearance/CTA settings and nine block typ
 
 Admin password recovery starts at `/admin/login` → **Quên mật khẩu?**. Verified email links now open a new-password form, including fallback redirects to the homepage. See [docs/Admin_Password_Recovery.md](docs/Admin_Password_Recovery.md) for configuration, expiry handling and verification limits.
 
+Blog typography uses self-hosted Plus Jakarta Sans and Source Serif 4, including Vietnamese and real italic faces; CMS preview and the text editor use the same font assets. See [docs/Blog_Typography.md](docs/Blog_Typography.md) for the repaired Georgia fallback defect, licenses and verification.
+
 | Layer | Technology |
 |---|---|
 | Frontend | React 18 + Vite 5 + Tailwind CSS |
