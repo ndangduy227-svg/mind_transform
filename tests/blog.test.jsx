@@ -55,6 +55,23 @@ test('search tolerates missing summaries and preserves filters on article round 
     assert.match(screen.getByLabelText('Current route').textContent,/category=Strategy/);
 });
 
+test('short Lark guides show a text cover, official sources and links to every scope', async () => {
+    view('/blog?q=Lark&category=Technology');
+    await screen.findByRole('heading', { name:'Lark là gì? Của ai, chi phí bao nhiêu và dùng để làm gì?' });
+    assert.ok(screen.getByText(/Hiểu & dùng Lark.*Bài ngắn/i));
+    assert.equal(screen.queryByLabelText('Sơ đồ quy trình'),null);
+    fireEvent.click(screen.getByRole('link', { name:'Đọc câu chuyện' }));
+    await screen.findByRole('heading', { name:'Lark là gì, của đơn vị nào?' });
+    assert.equal(screen.getByRole('link', {name:'bảng giá chính thức kiểm tra ngày 25/10/2026'}).getAttribute('href'),'https://www.larksuite.com/vi_vn/plans');
+    const scopeNames=['Cộng tác nội bộ','Giao việc và theo dõi dự án','Báo cáo bán hàng hằng ngày','Checklist cửa hàng, bàn giao ca','Theo dõi khách hàng','Phê duyệt đề xuất','Tài liệu và đào tạo nội bộ','Theo dõi tồn kho, đề nghị bổ sung'];
+    for(const name of scopeNames) assert.match(screen.getByRole('link',{name,exact:true}).getAttribute('href'),/^\/blog\//);
+    assert.equal(screen.getByRole('link',{name:'Báo cáo bán hàng hằng ngày',exact:true}).getAttribute('href'),'/blog/bao-cao-ban-hang-hang-ngay-tren-lark');
+    cleanup();
+    view('/blog/bao-cao-ban-hang-hang-ngay-tren-lark');
+    await screen.findByRole('heading',{name:'Một luồng báo cáo đơn giản'});
+    assert.ok(screen.getByRole('button',{name:'Nhận MIND Map miễn phí'}));
+});
+
 test('CMS HTML retains authored anchors, de-duplicates headings and removes active content', () => {
     const content = '<h2 id="custom">Đầu</h2><h2 id="custom">Cuối</h2><p id="footnote">Ghi chú</p><p onclick="alert(1)"><a href="javascript:alert(1)">Unsafe link</a></p><script>alert(1)</script><iframe src="https://example.com"></iframe><p><img src="/demo.webp" alt="Evidence" onerror="alert(1)"></p>';
     const model = articleModel(content);

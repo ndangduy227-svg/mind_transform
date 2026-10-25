@@ -1,4 +1,5 @@
 import otoHopNhatDocument from '../content/oto-hop-nhat-sales-garage-ops.editorial.json';
+import larkGuides from '../content/lark-guides.posts.json';
 
 export const STATIC_POSTS = [
     {
@@ -13,5 +14,6 @@ export const STATIC_POSTS = [
         status: 'Published',
         date: '2026-06-11',
     },
+    ...larkGuides,
 ];
 

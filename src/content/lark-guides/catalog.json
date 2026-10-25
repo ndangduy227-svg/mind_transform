@@ -1,0 +1,101 @@
+[
+  {
+    "slug": "lark-la-gi-chi-phi-pham-vi-ung-dung",
+    "title": "Lark là gì? Của ai, chi phí bao nhiêu và dùng để làm gì?",
+    "summary": "Giới thiệu Lark của ByteDance, bốn gói dịch vụ và tám phạm vi ứng dụng cho doanh nghiệp nhỏ.",
+    "category": "Technology",
+    "persona": "Chủ doanh nghiệp nhỏ đang tìm hiểu Lark",
+    "pain": "Chưa rõ Lark giải quyết việc gì và cần dự trù chi phí nào",
+    "useCase": "Chọn một quy trình đầu tiên",
+    "ctaTitle": "Doanh nghiệp của bạn nên bắt đầu từ việc nào?",
+    "ctaBody": "Gửi quy trình đang vướng. Mindtransform cùng bạn đọc hiện trạng, chọn một việc để thử và xác định cách đo trước khi triển khai."
+  },
+  {
+    "slug": "cong-tac-noi-bo-tren-lark",
+    "title": "Cộng tác nội bộ trên Lark: chat, lịch, họp và tài liệu chung",
+    "summary": "Cách một nhóm nhỏ dùng Messenger, Calendar, Meetings và Docs để giữ thông tin công việc dễ tìm và dễ theo dõi.",
+    "category": "Technology",
+    "persona": "Quản lý nhóm vận hành",
+    "pain": "Thông tin, quyết định và tài liệu nằm rải rác",
+    "useCase": "Họp tuần và theo dõi quyết định",
+    "ctaTitle": "Thử với một cuộc họp hằng tuần.",
+    "ctaBody": "Gửi cách nhóm đang họp và lưu quyết định. Mindtransform giúp bạn chọn một luồng trao đổi và bàn giao dễ dùng hơn."
+  },
+  {
+    "slug": "quan-ly-cong-viec-du-an-tren-lark",
+    "title": "Quản lý công việc trên Lark: khi nào dùng Tasks, khi nào dùng Base?",
+    "summary": "Phân biệt việc đơn lẻ và quy trình nhiều dữ liệu; tổ chức người nhận, hạn chót, trạng thái và nhắc việc trên Lark.",
+    "category": "Methodology",
+    "persona": "Quản lý nhóm đang có nhiều đầu việc",
+    "pain": "Đã giao việc nhưng vẫn phải hỏi tiến độ",
+    "useCase": "Theo dõi công việc và việc quá hạn",
+    "ctaTitle": "Chọn một nhóm việc hay bị trễ.",
+    "ctaBody": "Gửi ví dụ đang dùng để giao việc. Mindtransform cùng bạn làm rõ người chịu trách nhiệm, tiêu chí hoàn tất và cách theo dõi."
+  },
+  {
+    "slug": "bao-cao-ban-hang-hang-ngay-tren-lark",
+    "title": "Báo cáo bán hàng hằng ngày trên Lark: từ cuối ca đến dashboard",
+    "summary": "Một luồng báo cáo cho chuỗi nhỏ: form cuối ca, dữ liệu thống nhất, danh sách cần kiểm tra và dashboard theo cửa hàng.",
+    "category": "Data",
+    "persona": "Chủ chuỗi bán lẻ hoặc F&B",
+    "pain": "Mất thời gian đuổi và tổng hợp báo cáo cuối ngày",
+    "useCase": "Daily Sales Report",
+    "ctaTitle": "Bắt đầu từ báo cáo cuối một ca.",
+    "ctaBody": "Gửi mẫu báo cáo đang dùng và nguồn số từ POS. Mindtransform giúp bạn xác định dữ liệu cần giữ, người kiểm tra và cách đo thời gian tổng hợp."
+  },
+  {
+    "slug": "checklist-cua-hang-ban-giao-ca-tren-lark",
+    "title": "Checklist cửa hàng trên Lark: kiểm tra xong, bàn giao rõ",
+    "summary": "Dùng Base và biểu mẫu để theo dõi mở/đóng ca, ghi nhận lỗi, giao người xử lý và kiểm tra việc còn tồn.",
+    "category": "Methodology",
+    "persona": "Quản lý cửa hàng hoặc vận hành chuỗi",
+    "pain": "Checklist đã tick nhưng việc chưa xử lý và bàn giao chưa rõ",
+    "useCase": "Store Checklist và bàn giao ca",
+    "ctaTitle": "Chọn một checklist đang hay bị bỏ sót.",
+    "ctaBody": "Gửi mẫu mở hoặc đóng ca. Mindtransform cùng bạn chọn mục cần kiểm, cách ghi lỗi và người nhận xử lý trước khi cấu hình."
+  },
+  {
+    "slug": "mini-crm-cham-soc-khach-hang-tren-lark",
+    "title": "Mini CRM trên Lark: biết khách nào cần chăm sóc tiếp",
+    "summary": "Tổ chức khách hàng, cơ hội, người phụ trách và ngày hẹn tiếp theo bằng Base, form và nhắc việc.",
+    "category": "Technology",
+    "persona": "Chủ spa, dịch vụ hoặc trưởng nhóm bán hàng nhỏ",
+    "pain": "Khách bị bỏ quên khi chưa có người nhận và lịch chăm sóc",
+    "useCase": "Mini CRM và nhắc chăm sóc",
+    "ctaTitle": "Thử với nhóm khách mới trong một tuần.",
+    "ctaBody": "Gửi các bước từ khi khách hỏi đến khi mua. Mindtransform giúp bạn xác định dữ liệu tối thiểu, người nhận và thời điểm cần theo dõi."
+  },
+  {
+    "slug": "phe-duyet-de-xuat-tren-lark",
+    "title": "Phê duyệt trên Lark: xin nghỉ, mua hàng và đề nghị thanh toán",
+    "summary": "Cách dùng Approval để nhận đề xuất, chuyển đúng người duyệt và theo dõi phần thực hiện sau quyết định.",
+    "category": "Methodology",
+    "persona": "Chủ doanh nghiệp hoặc quản lý hành chính vận hành",
+    "pain": "Đề xuất chờ duyệt trong chat, thiếu thông tin và trạng thái",
+    "useCase": "Duyệt đề nghị mua vật tư",
+    "ctaTitle": "Chọn một loại đề xuất phát sinh thường xuyên.",
+    "ctaBody": "Gửi mẫu đề xuất cùng người đang duyệt. Mindtransform cùng bạn làm rõ thông tin bắt buộc, thẩm quyền và cách theo dõi sau duyệt."
+  },
+  {
+    "slug": "tai-lieu-dao-tao-noi-bo-tren-lark",
+    "title": "Tài liệu và đào tạo trên Lark: người mới có chỗ để tra, để học",
+    "summary": "Dùng Docs, Wiki và bảng theo dõi thực hành để giữ hướng dẫn thống nhất và giảm việc giải thích lặp lại.",
+    "category": "Methodology",
+    "persona": "Quản lý cửa hàng hoặc người đào tạo nhân viên mới",
+    "pain": "Phải hướng dẫn lại từ đầu, tài liệu nhiều bản và khó tìm",
+    "useCase": "Onboarding Wiki và theo dõi thực hành",
+    "ctaTitle": "Viết lại một hướng dẫn hay bị hỏi nhất.",
+    "ctaBody": "Gửi quy trình và tài liệu đang dùng. Mindtransform giúp bạn chọn nội dung cần chuẩn hóa và cách kiểm tra nhân viên đã thực hành được."
+  },
+  {
+    "slug": "theo-doi-ton-kho-canh-bao-tren-lark",
+    "title": "Theo dõi tồn kho trên Lark: biết khi nào cần bổ sung hàng",
+    "summary": "Một cách cấu hình Base cho tồn kho cơ bản, nhập/xuất, ngưỡng cảnh báo và đề nghị bổ sung tại cửa hàng.",
+    "category": "Data",
+    "persona": "Chủ cửa hàng hoặc quản lý vật tư chuỗi nhỏ",
+    "pain": "Hết vật tư mới biết và số tồn giữa các nguồn không khớp",
+    "useCase": "Inventory Alert và đề nghị bổ sung",
+    "ctaTitle": "Bắt đầu với một nhóm vật tư dễ kiểm.",
+    "ctaBody": "Gửi cách ghi nhận nhập/xuất và nguồn số tồn hiện tại. Mindtransform cùng bạn chốt nguồn dữ liệu, người giữ và quy tắc cần cảnh báo."
+  }
+]
