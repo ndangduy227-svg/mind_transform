@@ -13,7 +13,7 @@ The article body, italic hero line, statement quotes and workflow notes explicit
 - Load the local font stylesheet from `index.html`; preload only the normal Latin/Vietnamese brand faces. Arial and Times New Roman provide Vietnamese-capable sans/serif fallbacks on the checked Windows installation.
 - Share font tokens with published articles and CMS preview. The TinyMCE iframe loads the same local font stylesheet and uses the serif reading face plus sans headings.
 - Increase hero and blog-intro headline line height to 1.2 and relax negative letter spacing, leaving more room for Vietnamese diacritics. Preserve the editorial layout and content.
-- Include the unmodified SIL Open Font License files beside both font families. No new application dependency or database change.
+- Include the SIL Open Font License texts beside both font families (trailing whitespace normalized). No new application dependency or database change.
 
 ## Verification
 
