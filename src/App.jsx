@@ -23,6 +23,7 @@ const SkillEditor = lazy(() => import('./pages/admin/SkillEditor'));
 import LeadForm from './components/LeadForm';
 import { isAuthenticated } from './services/cmsAdminService';
 import { Loader2 } from 'lucide-react';
+import PasswordRecoveryRedirect from './components/PasswordRecoveryRedirect';
 
 function ProtectedRoute({ children }) {
     const [authState, setAuthState] = useState('loading'); // loading | authed | denied
@@ -123,6 +124,7 @@ export default function App() {
         <HelmetProvider>
             <ModalProvider>
                 <Router>
+                    <PasswordRecoveryRedirect />
                     <ScrollToTop />
                     <Suspense fallback={<div role="status" className="min-h-screen bg-slate-950 text-slate-300 grid place-items-center">Đang tải trang...</div>}>
                         <AppContent />

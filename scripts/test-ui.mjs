@@ -7,8 +7,9 @@ const root = process.cwd();
 const output = resolve(root, '.test-output/ui.test.cjs');
 const blogOutput = resolve(root, '.test-output/blog.test.cjs');
 const cmsOutput = resolve(root, '.test-output/cms.test.cjs');
+const authOutput = resolve(root, '.test-output/auth.test.cjs');
 await mkdir(resolve(root, '.test-output'), { recursive: true });
-for (const [entry, outfile] of [['tests/ui.test.jsx', output], ['tests/blog.test.jsx', blogOutput], ['tests/cms-editor.test.jsx',cmsOutput]]) await build({ entryPoints: [entry], outfile, bundle: true,
+for (const [entry, outfile] of [['tests/ui.test.jsx', output], ['tests/blog.test.jsx', blogOutput], ['tests/cms-editor.test.jsx',cmsOutput], ['tests/auth.test.jsx', authOutput]]) await build({ entryPoints: [entry], outfile, bundle: true,
     platform: 'node', format: 'cjs', jsx: 'automatic',
     external: ['react', 'react/*', 'react-dom', 'react-dom/*', '@testing-library/react', 'react-router-dom', 'react-helmet-async', 'framer-motion', 'jsdom', 'lucide-react'],
     loader: { '.md': 'text', '.css': 'empty' },
@@ -20,6 +21,6 @@ for (const [entry, outfile] of [['tests/ui.test.jsx', output], ['tests/blog.test
     } }],
 });
 try {
-    const result = spawnSync(process.execPath, ['--test', output, blogOutput,cmsOutput], { stdio: 'inherit' });
+    const result = spawnSync(process.execPath, ['--test', output, blogOutput,cmsOutput,authOutput], { stdio: 'inherit' });
     process.exitCode = result.status ?? 1;
-} finally { await Promise.all([unlink(output), unlink(blogOutput),unlink(cmsOutput)]); }
+} finally { await Promise.all([unlink(output), unlink(blogOutput),unlink(cmsOutput),unlink(authOutput)]); }

@@ -24,6 +24,8 @@ The blog now uses an editorial Longform layout with responsive contents, wide me
 
 CMS authors can choose formats, cover/appearance/CTA settings and nine block types; reorder/duplicate blocks and items; preview desktop/mobile; and import/export reusable documents. Start at `/admin/post/new`. See [docs/CMS_Editorial_Authoring.md](docs/CMS_Editorial_Authoring.md). Configuration is stored in the existing text `content` column; no database migration is required.
 
+Admin password recovery starts at `/admin/login` → **Quên mật khẩu?**. Verified email links now open a new-password form, including fallback redirects to the homepage. See [docs/Admin_Password_Recovery.md](docs/Admin_Password_Recovery.md) for configuration, expiry handling and verification limits.
+
 | Layer | Technology |
 |---|---|
 | Frontend | React 18 + Vite 5 + Tailwind CSS |

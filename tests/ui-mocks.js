@@ -1,5 +1,19 @@
-export const state = { leads: [], failLead: false, failChat: false, chats: [], posts: [], failPost:false, coverOnly:false, postWrites:[] };
-export const mockSupabase = { from(table) {
+export const state = { leads: [], failLead: false, failChat: false, chats: [], posts: [], failPost:false, coverOnly:false, postWrites:[], authCalls: [], authError: null, authThrows: false };
+const authListeners = new Set();
+export function emitAuth(event, session) { authListeners.forEach(listener => listener(event, session)); }
+async function authResult(method, payload) {
+    state.authCalls.push({method, payload});
+    if (state.authThrows) throw new Error('Test network failure');
+    if (method === 'signOut' && !state.authError) emitAuth('SIGNED_OUT', null);
+    return { data: { user: { id: 'test-user' } }, error: state.authError };
+}
+export const mockSupabase = { auth: {
+    onAuthStateChange(listener) { authListeners.add(listener); return { data: { subscription: { unsubscribe() { authListeners.delete(listener); } } } }; },
+    resetPasswordForEmail(email, options) { return authResult('resetPasswordForEmail', {email, options}); },
+    updateUser(payload) { return authResult('updateUser', payload); },
+    signInWithPassword(payload) { return authResult('signInWithPassword', payload); },
+    signOut(payload) { return authResult('signOut', payload); },
+}, from(table) {
     if (table === 'posts') {
         const filters = [];let updateValue;
         const execute = () => {
@@ -32,4 +46,4 @@ export const mockSupabase = { from(table) {
         state.leads.push(...rows); return { error: null };
     } };
 } };
-export function reset() { state.leads = []; state.chats = []; state.failLead = false; state.failChat = false; state.posts = [];state.failPost=false;state.coverOnly=false;state.postWrites=[]; }
+export function reset() { state.leads = []; state.chats = []; state.failLead = false; state.failChat = false; state.posts = [];state.failPost=false;state.coverOnly=false;state.postWrites=[];state.authCalls=[];state.authError=null;state.authThrows=false; }
