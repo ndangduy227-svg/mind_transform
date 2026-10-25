@@ -2,14 +2,14 @@ import './dom-setup.js';
 import test, { beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
-import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, within, act, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { ModalProvider, useModal } from '../src/context/ModalContext';
 import Blog from '../src/pages/Blog';
 import BlogPost from '../src/pages/BlogPost';
 import ArticleBody, { articleModel } from '../src/components/blog/ArticleBody';
-import { invalidateCache } from '../src/services/cmsService';
+import { invalidateCache, posts as postsService } from '../src/services/cmsService';
 import { state, reset } from './ui-mocks';
 
 beforeEach(() => { reset(); invalidateCache(); });
@@ -19,6 +19,76 @@ function Path() { const loc = useLocation(); return <output aria-label="Current 
 function view(path = '/blog/oto-hop-nhat-sales-garage-ops') {
     return render(<HelmetProvider><ModalProvider><MemoryRouter initialEntries={[path]}><Routes><Route path="/blog" element={<Blog />} /><Route path="/blog/:slug" element={<BlogPost />} /></Routes><ModalState /><Path /><Link to="/blog/oto-hop-nhat-sales-garage-ops">Open sample</Link></MemoryRouter></ModalProvider></HelmetProvider>);
 }
+
+const cmsPost = {slug:'ban-giao-thuc-te',title:'Bàn giao thực tế',summary:null,category:'Strategy',content:'## Hiện trạng\nNội dung',date:'2026-10-24',status:'Published'};
+function deferred() {
+    let resolve, reject;
+    const promise = new Promise((onResolve, onReject) => { resolve=onResolve;reject=onReject; });
+    return {promise,resolve,reject};
+}
+
+test('bundled articles are immediately readable while the CMS is pending, then published CMS posts appear', async () => {
+    const pending = deferred();
+    state.readPosts = () => pending.promise;
+    view('/blog');
+    assert.ok(screen.getByRole('heading', {name:'Lark là gì? Của ai, chi phí bao nhiêu và dùng để làm gì?'}));
+    assert.equal(screen.queryByText('Đang tải bài viết...'),null);
+    fireEvent.change(screen.getByRole('searchbox',{name:'Tìm bài viết'}),{target:{value:'báo cáo bán hàng'}});
+    assert.ok(screen.getByRole('heading',{name:'Báo cáo bán hàng hằng ngày trên Lark: từ cuối ca đến dashboard'}));
+    fireEvent.click(screen.getByRole('link',{name:'Đọc câu chuyện'}));
+    await screen.findByRole('heading',{name:'Một luồng báo cáo đơn giản'});
+    fireEvent.click(screen.getByRole('link',{name:'Góc vận hành'}));
+    await screen.findByRole('searchbox',{name:'Tìm bài viết'});
+    assert.equal(state.postReads.length,1);
+    assert.equal(state.postReads[0].retryEnabled,false);
+    assert.ok(state.postReads[0].signal instanceof AbortSignal);
+    fireEvent.change(screen.getByRole('searchbox',{name:'Tìm bài viết'}),{target:{value:''}});
+    await act(async () => pending.resolve({data:[cmsPost],error:null}));
+    assert.ok(await screen.findByRole('heading',{name:cmsPost.title}));
+});
+
+test('a failed CMS request leaves bundled articles usable and avoids repeated requests on remount', async () => {
+    const pending = deferred();
+    state.readPosts = () => pending.promise;
+    view('/blog');
+    await act(async () => pending.reject(new TypeError('Failed to fetch')));
+    assert.ok(screen.getByRole('heading',{name:'Lark là gì? Của ai, chi phí bao nhiêu và dùng để làm gì?'}));
+    assert.equal(screen.queryByRole('alert'),null);
+    cleanup();
+    view('/blog');
+    await act(async () => {});
+    assert.equal(state.postReads.length,1);
+    assert.ok(screen.getByRole('heading',{name:'Lark là gì? Của ai, chi phí bao nhiêu và dùng để làm gì?'}));
+});
+
+test('failed revalidation retains previously loaded CMS content', async t => {
+    state.posts = [cmsPost];
+    await postsService.getAll();
+    const expiredTime = Date.now() + 5 * 60 * 1000 + 1;
+    t.mock.method(Date,'now',() => expiredTime);
+    state.readPosts = () => ({data:null,error:{message:'CMS unavailable'}});
+    view('/blog?q=ban%20giao&category=Strategy');
+    assert.ok(screen.getByRole('heading',{name:cmsPost.title}));
+    await act(async () => { await postsService.getAll(); });
+    assert.ok(screen.getByRole('heading',{name:cmsPost.title}));
+    assert.equal(state.postReads.length,2);
+});
+
+test('admin invalidation prevents an older CMS response from restoring removed content', async () => {
+    const old = deferred(), fresh = deferred();
+    let calls=0;
+    state.readPosts = () => (++calls===1 ? old.promise : fresh.promise);
+    const oldRequest=postsService.getAll();
+    await waitFor(() => assert.equal(state.postReads.length,1));
+    invalidateCache('posts');
+    const freshRequest=postsService.getAll();
+    await waitFor(() => assert.equal(state.postReads.length,2));
+    fresh.resolve({data:[],error:null});
+    await freshRequest;
+    old.resolve({data:[cmsPost],error:null});
+    await oldRequest;
+    assert.equal(postsService.getCached().some(post=>post.slug===cmsPost.slug),false);
+});
 
 test('longform has working TOC targets, interactive workflow, gallery, checklist and contact action', async () => {
     view();

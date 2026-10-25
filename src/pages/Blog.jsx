@@ -17,7 +17,7 @@ function PostMeta({ post }) {
 }
 
 export default function Blog() {
-    const [posts, setPosts] = useState([]);
+    const [posts, setPosts] = useState(() => postsService.getCached());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [params, setParams] = useSearchParams();
@@ -49,7 +49,7 @@ export default function Blog() {
             <div className="blog-controls"><label className="blog-search"><Search size={20} aria-hidden="true" /><span className="sr-only">Tìm bài viết</span><input type="search" value={query} onChange={event => updateFilter('q',event.target.value)} placeholder="Tìm vấn đề: bàn giao, tồn kho, báo cáo..." /></label>
                 {categories.length > 1 && <div className="blog-topics" role="group" aria-label="Chủ đề bài viết"><button type="button" aria-pressed={!category} onClick={() => updateFilter('category','')}>Tất cả</button>{categories.map(value => <button type="button" key={value} aria-pressed={category === value} onClick={() => updateFilter('category',value)}>{CATEGORY_LABELS[value] || value}</button>)}</div>}
             </div>
-            {loading ? <p className="blog-no-results" role="status">Đang tải bài viết...</p> : error ? <p className="blog-no-results" role="alert">Không thể tải bài viết. Vui lòng tải lại trang để thử lại.</p> : !featured ? <div className="blog-no-results" role="status"><p>Không tìm thấy bài viết phù hợp.</p><button type="button" className="editorial-button" onClick={() => setParams({})}>Xem tất cả bài viết</button></div> : <>
+            {loading && !featured ? <p className="blog-no-results" role="status">Đang tải bài viết...</p> : error && !posts.length ? <p className="blog-no-results" role="alert">Không thể tải bài viết. Vui lòng tải lại trang để thử lại.</p> : !featured ? <div className="blog-no-results" role="status"><p>Không tìm thấy bài viết phù hợp.</p><button type="button" className="editorial-button" onClick={() => setParams({})}>Xem tất cả bài viết</button></div> : <>
                 <article className="blog-feature"><div><p className="editorial-kicker">{profile?.label || CATEGORY_LABELS[featured.category] || featured.category || 'Góc nhìn'} · {profile?.format === 'standard' ? 'Bài ngắn' : profile?.format === 'explainer' ? 'Visual explainer' : 'Longform'}</p><h2><Link to={`/blog/${featured.slug}`} state={linkState}>{featured.title}</Link></h2><p>{profile?.lead || featured.summary}</p><PostMeta post={featured} />{profile?.disclosure && <p className="article-caption">{profile.disclosure}</p>}<Link to={`/blog/${featured.slug}`} state={linkState} className="editorial-button">Đọc câu chuyện <ArrowRight size={17} aria-hidden="true" /></Link></div>{profile?.heroMode === 'workflow' && profile.workflow.length > 0 ? <WorkflowCover profile={profile} /> : featuredImage ? <Link to={`/blog/${featured.slug}`} state={linkState} aria-label={`Đọc ${featured.title}`}><img src={featuredImage} alt="" className="blog-thumbnail" decoding="async" /></Link> : null}</article>
                 {remaining.length > 0 && <div className="blog-grid">{remaining.map(post => {
                     const image = getGoogleDriveImageUrl(post.cover_image || post.image);

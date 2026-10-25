@@ -1,4 +1,4 @@
-export const state = { leads: [], failLead: false, failChat: false, chats: [], posts: [], failPost:false, coverOnly:false, postWrites:[], authCalls: [], authError: null, authThrows: false };
+export const state = { leads: [], failLead: false, failChat: false, chats: [], posts: [], failPost:false, coverOnly:false, postWrites:[], postReads:[], readPosts:null, authCalls: [], authError: null, authThrows: false };
 const authListeners = new Set();
 export function emitAuth(event, session) { authListeners.forEach(listener => listener(event, session)); }
 async function authResult(method, payload) {
@@ -15,9 +15,13 @@ export const mockSupabase = { auth: {
     signOut(payload) { return authResult('signOut', payload); },
 }, from(table) {
     if (table === 'posts') {
-        const filters = [];let updateValue;
+        const filters = [];let updateValue, retryEnabled, signal;
         const execute = () => {
-            if(!updateValue)return {data:state.posts.filter(post=>filters.every(([field,value])=>post[field]===value)),error:null};
+            if(!updateValue) {
+                state.postReads.push({retryEnabled,signal});
+                if(state.readPosts)return state.readPosts();
+                return {data:state.posts.filter(post=>filters.every(([field,value])=>post[field]===value)),error:null};
+            }
             state.postWrites.push(updateValue);
             if(state.failPost)return {data:null,error:{message:'Test post save failure'}};
             if(state.coverOnly && 'image' in updateValue)return {data:null,error:{code:'PGRST204',message:"Could not find the 'image' column in the schema cache"}};
@@ -33,9 +37,11 @@ export const mockSupabase = { auth: {
                 if(rows.some(row=>state.posts.some(post=>post.slug===row.slug)))return {error:{code:'23505',message:'Duplicate slug'}};
                 state.posts.push(...rows.map((row,index)=>({...row,id:state.posts.length+index+1})));return {error:null};
             },
-            then(resolve,reject) { return Promise.resolve(execute()).then(resolve,reject); },
+            then(resolve,reject) { return Promise.resolve().then(execute).then(resolve,reject); },
             eq(field, value) { filters.push([field,value]); return query; },
-            async order() { return { data: state.posts.filter(post => filters.every(([field,value]) => post[field] === value)), error: null }; },
+            order() { return query; },
+            retry(enabled) { retryEnabled=enabled;return query; },
+            abortSignal(value) { signal=value;return query; },
             async single() { return { data: state.posts.find(post => filters.every(([field,value]) => post[field] === value)) || null, error: null }; },
         };
         return query;
@@ -46,4 +52,4 @@ export const mockSupabase = { auth: {
         state.leads.push(...rows); return { error: null };
     } };
 } };
-export function reset() { state.leads = []; state.chats = []; state.failLead = false; state.failChat = false; state.posts = [];state.failPost=false;state.coverOnly=false;state.postWrites=[];state.authCalls=[];state.authError=null;state.authThrows=false; }
+export function reset() { state.leads = []; state.chats = []; state.failLead = false; state.failChat = false; state.posts = [];state.failPost=false;state.coverOnly=false;state.postWrites=[];state.postReads=[];state.readPosts=null;state.authCalls=[];state.authError=null;state.authThrows=false; }

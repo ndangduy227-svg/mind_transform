@@ -11,6 +11,9 @@ const cache = {
 };
 
 const CACHE_TTL = 5 * 60 * 1000;
+const POSTS_TIMEOUT = 4000;
+let postsRequest = null;
+let postsGeneration = 0;
 
 function mergePosts(remotePosts = []) {
     const postsBySlug = new Map();
@@ -28,25 +31,43 @@ function isCacheValid(type) {
     return cache[type] !== null && (Date.now() - cache[`${type}Timestamp`]) < CACHE_TTL;
 }
 
-export const posts = {
-    getAll: async () => {
-        if (isCacheValid('posts')) return cache.posts;
+const bundledPosts = mergePosts();
 
+async function refreshPosts(generation) {
+    let result = cache.posts ?? bundledPosts;
+    try {
         const { data, error } = await supabase
             .from('posts')
             .select('*')
             .eq('status', 'Published')
-            .order('date', { ascending: false });
+            .order('date', { ascending: false })
+            .retry(false)
+            .abortSignal(AbortSignal.timeout(POSTS_TIMEOUT));
+        if (!error) result = mergePosts(data ?? []);
+    } catch {
+        // Keep readable content when the CMS is offline or the request times out.
+    }
 
-        if (error) {
-            cache.posts = mergePosts();
-            cache.postsTimestamp = Date.now();
-            return cache.posts;
-        }
-
-        cache.posts = mergePosts(data ?? []);
+    // An admin edit may invalidate the cache while this request is pending.
+    if (generation === postsGeneration) {
+        cache.posts = result;
         cache.postsTimestamp = Date.now();
-        return cache.posts;
+    }
+    return cache.posts ?? bundledPosts;
+}
+
+export const posts = {
+    getCached: () => cache.posts ?? bundledPosts,
+
+    getAll: () => {
+        if (isCacheValid('posts')) return Promise.resolve(cache.posts);
+        if (postsRequest) return postsRequest;
+
+        const request = refreshPosts(postsGeneration).finally(() => {
+            if (postsRequest === request) postsRequest = null;
+        });
+        postsRequest = request;
+        return request;
     },
 
     getBySlug: async (slug) => {
@@ -165,6 +186,10 @@ export const templates = {
 };
 
 export function invalidateCache(type) {
+    if (!type || type === 'posts') {
+        postsGeneration += 1;
+        postsRequest = null;
+    }
     if (type) {
         cache[type] = null;
         cache[`${type}Timestamp`] = 0;

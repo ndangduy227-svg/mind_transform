@@ -8,7 +8,9 @@
 
 ## Verification — 2026-10-25
 
-Founder approved the website/blog implementation and requested reusable CMS authoring. The suites now cover 39 tests (21 API/data/helper, 18 component interactions), including author → save → reload → publish/render for independent article slugs. Production releases are tracked by Vercel's status on `main`. Tests run in a clean local source mirror. Live authenticated CMS/Storage and browser pixel verification are not claimed.
+Founder approved the website/blog implementation, reusable CMS authoring and the Blog loading repair. The suites now cover 52 tests (25 API/data/helper, 27 component interactions), including author → save → reload → publish/render and readable articles while the CMS is slow or offline. Production releases are tracked by Vercel's status on `main`. Tests run in a clean local source mirror. Browser access works; authenticated CMS/Storage and lead delivery remain unverified.
+
+Blog immediately displays bundled or cached articles and refreshes CMS data in the background. Public list reads share one request, skip automatic retries and abort after four seconds. The configured production Supabase hostname returned NXDOMAIN during diagnosis; this display repair does not restore that project. See `docs/Blog_Loading_Performance.md` for evidence, behavior and limits.
 
 MindAI stores successful user/assistant turns, permits five exchanges and saves submitted contact/intake/transcript to the existing `leads` schema. Per-turn durable sessions and automatic proposal/email delivery are not implemented. See `docs/Website_V1_Audit.md` for scope and limits.
 
